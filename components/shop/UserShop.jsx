@@ -57,7 +57,7 @@ const STATUS_OPTIONS = [
   { value: "pending", label: "Pending", style: "bg-amber-50 text-amber-700 border-amber-200" },
 ];
 
-// ─── Update Listing Dialog ─────────────────────────────────────────────────────
+// Update Listing Dialog 
 
 function UpdateListingDialog({ open, onClose, item, accessToken, onSuccess }) {
   const [form, setForm] = useState({
@@ -387,7 +387,7 @@ function UpdateListingDialog({ open, onClose, item, accessToken, onSuccess }) {
   );
 }
 
-// ─── Status Update Dialog ──────────────────────────────────────────────────────
+// Status Update Dialog 
 
 function UpdateStatusDialog({ open, onClose, item, accessToken, onSuccess }) {
   const [selectedStatus, setSelectedStatus] = useState(item?.status || "active");
@@ -481,7 +481,7 @@ function UpdateStatusDialog({ open, onClose, item, accessToken, onSuccess }) {
   );
 }
 
-// ─── My Listing Card (with action menu) ───────────────────────────────────────
+// My Listing Card (with action menu) 
 
 function MyListingCard({ item, onEdit, onDelete, onStatusUpdate }) {
   const thumbnail = item.images?.find((img) => img.is_thumbnail === 1) || item.images?.[0];
@@ -564,8 +564,7 @@ function MyListingCard({ item, onEdit, onDelete, onStatusUpdate }) {
   );
 }
 
-// ─── UserShop ─────────────────────────────────────────────────────────────────
-
+// UserShop 
 export default function UserShop() {
   const { accessToken } = useAppContext();
   const queryClient = useQueryClient();
