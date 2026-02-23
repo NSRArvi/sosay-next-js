@@ -1,4 +1,3 @@
-import React from 'react';
 import { ShoppingBag, Users, TrendingUp, Zap } from 'lucide-react';
 
 export default function AuthSidebar() {
