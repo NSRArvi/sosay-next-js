@@ -8,6 +8,7 @@ import { useAppContext } from "@/context/context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Image from "next/image";
 
 export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -79,6 +80,68 @@ export default function LoginForm() {
           onSubmit={handleLogin}
           className="bg-white p-6 sm:p-8 md:p-10 rounded-lg shadow-xl border border-gray-100 backdrop-blur-sm"
         >
+          {/* Scotty Pumpkin — vertical logo block */}
+          <a
+            href="https://scottypumpkin.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex flex-col items-center gap-1.5 mb-6 transition-all duration-200"
+          >
+            <span className="relative">
+              <Image
+                src="/images/logo/scotty.webp"
+                alt="Scotty Pumpkin"
+                width={56}
+                height={56}
+                className="rounded-full object-cover transition-transform duration-200 group-hover:scale-105"
+                style={{
+                  border: "2.5px solid #F97316",
+                  boxShadow:
+                    "0 0 0 4px rgba(249,115,22,0.12), 0 0 18px rgba(249,115,22,0.30)",
+                }}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  e.currentTarget.nextElementSibling.style.display = "flex";
+                }}
+              />
+              <span
+                className="hidden h-14 w-14 items-center justify-center rounded-full text-2xl"
+                style={{
+                  border: "2.5px solid #F97316",
+                  boxShadow:
+                    "0 0 0 4px rgba(249,115,22,0.12), 0 0 18px rgba(249,115,22,0.30)",
+                  background: "#fff7ed",
+                }}
+              >
+                🎃
+              </span>
+            </span>
+            <span className="flex flex-col items-center leading-tight">
+              <span
+                className="text-[10px] font-semibold uppercase"
+                style={{
+                  color: "rgba(194,87,10,0.50)",
+                  letterSpacing: "0.12em",
+                }}
+              >
+                Part of the
+              </span>
+              <span
+                className="text-xs font-bold transition-colors duration-200 group-hover:text-orange-600"
+                style={{ color: "#C2570A" }}
+              >
+                Scotty Pumpkin Web3 Ecosystem
+              </span>
+            </span>
+          </a>
+
+          {/* divider */}
+          <div className="flex items-center gap-3 mb-6">
+            <span className="h-px flex-1 bg-gray-100" />
+            <span className="text-xs text-gray-300 font-medium">Sosay</span>
+            <span className="h-px flex-1 bg-gray-100" />
+          </div>
+
           <motion.h2
             className="text-2xl sm:text-3xl font-bold text-center mb-3 sm:mb-4 text-gray-800"
             initial={{ opacity: 0 }}
@@ -98,7 +161,9 @@ export default function LoginForm() {
                 animate={{ opacity: 1, height: "auto" }}
                 className="overflow-hidden space-y-2"
               >
-                <Label htmlFor="phone_number" className="text-sm sm:text-base">Phone Number</Label>
+                <Label htmlFor="phone_number" className="text-sm sm:text-base">
+                  Phone Number
+                </Label>
                 <div className="relative">
                   <Input
                     id="phone_number"
@@ -116,7 +181,9 @@ export default function LoginForm() {
                 animate={{ opacity: 1, height: "auto" }}
                 className="overflow-hidden space-y-2"
               >
-                <Label htmlFor="email" className="text-sm sm:text-base">Email Address</Label>
+                <Label htmlFor="email" className="text-sm sm:text-base">
+                  Email Address
+                </Label>
                 <div className="relative">
                   <Input
                     id="email"
@@ -141,7 +208,9 @@ export default function LoginForm() {
             </Button>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm sm:text-base">Password</Label>
+              <Label htmlFor="password" className="text-sm sm:text-base">
+                Password
+              </Label>
               <div className="relative">
                 <Input
                   id="password"

@@ -44,7 +44,7 @@ export default function AppSidebar({ isOpen, onClose }) {
       count: totalUnread,
     },
     { name: "Friends", icon: Users, href: "/app/friends" },
-    { name: "Shop", icon: Store, href: "/app/shop" },
+    { name: "Spump Market", icon: Store, href: "/app/shop" },
     { name: "Reels", icon: Video, href: "/app/reels" },
     { name: "Pages", icon: Layers, href: "/app/pages" },
     { name: "Bookmark", icon: Bookmark, href: "/app/bookmark" },
