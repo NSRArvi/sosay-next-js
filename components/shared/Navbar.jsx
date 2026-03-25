@@ -11,6 +11,7 @@ export default function Navbar() {
   const menuItems = [
     { name: "Home", path: "/home" },
     { name: "Business", path: "/business" },
+    { name: "Marketplace", path: "/spump-market" },
     { name: "Creators", path: "/creators" },
     { name: "Blog", path: "/blog" },
   ];
