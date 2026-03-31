@@ -65,7 +65,7 @@ function DetailContent({ itemId, accessToken }) {
   return (
     <div className="flex flex-col sm:flex-row gap-0 overflow-hidden">
       {/* Left: Images */}
-      <div className="sm:w-60 flex-shrink-0 bg-gray-50">
+      <div className="sm:w-60 shrink-0 bg-gray-50">
         <div className="relative h-56 sm:h-72 bg-gray-100 overflow-hidden">
           {images.length > 0 ? (
             <img
@@ -114,7 +114,7 @@ function DetailContent({ itemId, accessToken }) {
             {item.title}
           </h2>
           <Badge
-            className={`capitalize text-xs border flex-shrink-0 mt-0.5 ${conditionStyle}`}
+            className={`capitalize text-xs border shrink-0 mt-0.5 ${conditionStyle}`}
             variant="outline"
           >
             {conditionLabel}
@@ -137,13 +137,13 @@ function DetailContent({ itemId, accessToken }) {
         <div className="space-y-2">
           {item.location && (
             <div className="flex items-center gap-1.5 text-sm text-gray-400">
-              <MapPin className="h-4 w-4 flex-shrink-0" />
+              <MapPin className="h-4 w-4 shrink-0" />
               <span>{item.location}</span>
             </div>
           )}
           {item.category && (
             <div className="flex items-center gap-1.5 text-sm text-gray-400">
-              <Tag className="h-4 w-4 flex-shrink-0" />
+              <Tag className="h-4 w-4 shrink-0" />
               <span>{item.category}</span>
             </div>
           )}
@@ -179,6 +179,10 @@ export function ProductDetailDialog({ itemId, open, onClose, accessToken }) {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-lg overflow-hidden rounded-2xl gap-0">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Product Details</DialogTitle>
+        </DialogHeader>
+
         {/* Only render (and fetch) when open and itemId is set */}
         {open && itemId && (
           <DetailContent itemId={itemId} accessToken={accessToken} />

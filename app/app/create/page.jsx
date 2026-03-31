@@ -95,6 +95,9 @@ export default function AddPostPage() {
         queryClient.invalidateQueries({
           queryKey: [`/feed_management/private/feeds/all/post/${userInfo.id}`],
         });
+        queryClient.invalidateQueries({
+          queryKey: ["/user/is-verified"],
+        });
       } else {
         toast.error(data.message);
       }
@@ -107,10 +110,16 @@ export default function AddPostPage() {
   const handleAddPost = () => {
     const description = editor?.getHTML();
 
+    // Validation
+    if (!description || description.trim() === "<p></p>" || description.trim() === "") {
+      toast.error("Please enter some content for your post");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("description", description);
     formData.append("interest", JSON.stringify(selectedInterests));
-    formData.append("visibility_id", visibility);
+    formData.append("visibility_id", String(visibility)); // Convert to string
 
     images.forEach((image, index) => {
       formData.append(`images[${index}]`, image);

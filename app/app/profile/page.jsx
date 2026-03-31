@@ -17,15 +17,21 @@ import ProfilePost from "@/components/profile/ProfilePost";
 import Image from "next/image";
 import defaultCover from "../../assets/designs/Welcome.png";
 import defaultProfile from "../../assets/designs/girl.png";
+import Link from "next/link";
+import { is } from "zod/v4/locales";
 
 export default function ProfilePage() {
-  const { userInfo, setUserInfo, accessToken } = useAppContext();
+  const { userInfo, setUserInfo, accessToken, isUserVerified } =
+    useAppContext();
+
   const queryClient = useQueryClient();
   const [openProfileDialog, setOpenProfileDialog] = useState(false);
   const [openCoverDialog, setOpenCoverDialog] = useState(false);
-  const [profilePreview, setProfilePreview] = useState(userInfo?.user_image || defaultProfile);
+  const [profilePreview, setProfilePreview] = useState(
+    userInfo?.user_image || defaultProfile,
+  );
   const [coverPreview, setCoverPreview] = useState(
-    userInfo?.user_cover_image || defaultCover
+    userInfo?.user_cover_image || defaultCover,
   );
   const [newProfileImage, setNewProfileImage] = useState(null);
   const [newCoverImage, setNewCoverImage] = useState(null);
@@ -36,7 +42,7 @@ export default function ProfilePage() {
       queryKey: ["/user/profile/profilepicture", accessToken],
       queryFn: fetchWithToken,
       enabled: !!accessToken,
-    }
+    },
   );
 
   // Fetch cover pictures
@@ -52,7 +58,7 @@ export default function ProfilePage() {
       return await postWithToken(
         "/user/profile/profilepicture",
         formData,
-        accessToken
+        accessToken,
       );
     },
     onSuccess: (data) => {
@@ -84,7 +90,7 @@ export default function ProfilePage() {
       return await putWithToken(
         `/user/profile/profilepicture/${id}`,
         formData,
-        accessToken
+        accessToken,
       );
     },
     onSuccess: (data) => {
@@ -115,7 +121,7 @@ export default function ProfilePage() {
       return await postWithToken(
         "/user/profile/coverpicture",
         formData,
-        accessToken
+        accessToken,
       );
     },
     onSuccess: (data) => {
@@ -147,7 +153,7 @@ export default function ProfilePage() {
       return await putWithToken(
         `/user/profile/coverpicture/${id}`,
         formData,
-        accessToken
+        accessToken,
       );
     },
     onSuccess: (data) => {
@@ -286,6 +292,35 @@ export default function ProfilePage() {
             <h1 className="text-2xl md:text-3xl font-bold dark:text-white">
               {userInfo?.name}
             </h1>
+
+            {/* counts and badge  */}
+            <div className="flex items-center gap-4 mt-2 text-sm">
+              <p>
+                {" "}
+                <span className="font-semibold">10</span> Friends
+              </p>
+              <p>
+                {" "}
+                <span className="font-semibold">5</span> Posts
+              </p>
+
+              {/* check user verification status and show badge or link accordingly  */}
+              {isUserVerified ? (
+                <Link
+                  href={"/app/verified-infromations"}
+                  className="inline-flex items-center text-[11px] font-medium px-2.5 py-1 rounded-full bg-secondary text-white"
+                >
+                  Verified
+                </Link>
+              ) : (
+                <Link
+                  href="/app/verify"
+                  className="px-4 py-1 text-xs rounded-full bg-destructive text-white"
+                >
+                  Not Verified
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>

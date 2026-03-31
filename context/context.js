@@ -1,4 +1,6 @@
 "use client";
+import { fetchWithToken } from "@/helpers/api";
+import { useQuery } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -11,7 +13,24 @@ export const AppProvider = ({ children }) => {
   const pathname = usePathname();
   const [userInfo, setUserInfo] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
-  
+  const [isUserVerified, setIsUserVerified] = useState(false);
+  const [verificationInfo, setVerificationInfo] = useState(null);
+
+  // Check user is verified
+  const { data } = useQuery({
+    queryKey: ["/user/is-verified", accessToken],
+    queryFn: fetchWithToken,
+    enabled: !!accessToken,
+  });
+
+  // Sync verification state whenever query data changes
+  useEffect(() => {
+    if (data) {
+      setIsUserVerified(data.status === true);
+      setVerificationInfo(data.data ?? null);
+    }
+  }, [data]);
+
   // Load user info & token from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user_info");
@@ -26,6 +45,7 @@ export const AppProvider = ({ children }) => {
     setUserInfo(user);
     localStorage.setItem("user_info", JSON.stringify(user));
   };
+
   // Update access token and sync to localStorage
   const updateAccessToken = (token) => {
     setAccessToken(token);
@@ -37,6 +57,8 @@ export const AppProvider = ({ children }) => {
   const logout = () => {
     setUserInfo(null);
     setAccessToken(null);
+    setIsUserVerified(false);
+    setVerificationInfo(null);
     localStorage.removeItem("user_info");
     localStorage.removeItem("access_token");
     router.push("/");
@@ -48,6 +70,8 @@ export const AppProvider = ({ children }) => {
         pathname,
         userInfo,
         accessToken,
+        isUserVerified,
+        verificationInfo,
         setUserInfo: updateUserInfo,
         setAccessToken: updateAccessToken,
         logout,

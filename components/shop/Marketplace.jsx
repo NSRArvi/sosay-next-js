@@ -28,6 +28,7 @@ import {
   ListingCardSkeleton,
 } from "@/components/shop/Listingcard";
 import { ProductDetailDialog } from "@/components/shop/Productdetaildialog";
+import CategoryDialog from "@/components/shop/CategoryDialog";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
 
@@ -77,7 +78,14 @@ function Pagination({ meta, page, onPageChange }) {
 
 // ─── Filter Panel (inner content, used in Sheet) ───────────────────────────────
 
-function FilterPanel({ filters, setFilters, categories, categoriesLoading, onApply, onReset }) {
+function FilterPanel({
+  filters,
+  setFilters,
+  categories,
+  categoriesLoading,
+  onApply,
+  onReset,
+}) {
   const [local, setLocal] = useState(filters);
 
   // Sync local when filters reset externally
@@ -91,7 +99,12 @@ function FilterPanel({ filters, setFilters, categories, categoriesLoading, onApp
   };
 
   const handleReset = () => {
-    const empty = { category_id: "", min_price: "", max_price: "", sort_by_price: "" };
+    const empty = {
+      category_id: "",
+      min_price: "",
+      max_price: "",
+      sort_by_price: "",
+    };
     setLocal(empty);
     setFilters(empty);
     onReset?.();
@@ -123,7 +136,9 @@ function FilterPanel({ filters, setFilters, categories, categoriesLoading, onApp
               <button
                 key={cat.id}
                 type="button"
-                onClick={() => setLocal((p) => ({ ...p, category_id: String(cat.id) }))}
+                onClick={() =>
+                  setLocal((p) => ({ ...p, category_id: String(cat.id) }))
+                }
                 className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${
                   local.category_id === String(cat.id)
                     ? "bg-secondary text-white border-secondary"
@@ -151,7 +166,9 @@ function FilterPanel({ filters, setFilters, categories, categoriesLoading, onApp
               type="number"
               min="0"
               value={local.min_price}
-              onChange={(e) => setLocal((p) => ({ ...p, min_price: e.target.value }))}
+              onChange={(e) =>
+                setLocal((p) => ({ ...p, min_price: e.target.value }))
+              }
               placeholder="0"
               className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 focus:ring-1 focus:ring-secondary/20 transition"
             />
@@ -165,7 +182,9 @@ function FilterPanel({ filters, setFilters, categories, categoriesLoading, onApp
               type="number"
               min="0"
               value={local.max_price}
-              onChange={(e) => setLocal((p) => ({ ...p, max_price: e.target.value }))}
+              onChange={(e) =>
+                setLocal((p) => ({ ...p, max_price: e.target.value }))
+              }
               placeholder="∞"
               className="w-full pl-10 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 focus:ring-1 focus:ring-secondary/20 transition"
             />
@@ -183,7 +202,9 @@ function FilterPanel({ filters, setFilters, categories, categoriesLoading, onApp
             <button
               key={opt.value}
               type="button"
-              onClick={() => setLocal((p) => ({ ...p, sort_by_price: opt.value }))}
+              onClick={() =>
+                setLocal((p) => ({ ...p, sort_by_price: opt.value }))
+              }
               className={`flex-1 py-2 text-xs rounded-lg border font-medium transition ${
                 local.sort_by_price === opt.value
                   ? "bg-secondary text-white border-secondary"
@@ -227,8 +248,10 @@ function ActiveFilterBadges({ filters, categories, onRemove }) {
     const cat = categories.find((c) => String(c.id) === filters.category_id);
     if (cat) badges.push({ key: "category_id", label: cat.name });
   }
-  if (filters.min_price) badges.push({ key: "min_price", label: `Min: ${filters.min_price}` });
-  if (filters.max_price) badges.push({ key: "max_price", label: `Max: ${filters.max_price}` });
+  if (filters.min_price)
+    badges.push({ key: "min_price", label: `Min: ${filters.min_price}` });
+  if (filters.max_price)
+    badges.push({ key: "max_price", label: `Max: ${filters.max_price}` });
   if (filters.sort_by_price) {
     const sort = SORT_OPTIONS.find((s) => s.value === filters.sort_by_price);
     if (sort) badges.push({ key: "sort_by_price", label: sort.label });
@@ -267,9 +290,17 @@ export default function Marketplace() {
   const [page, setPage] = useState(1);
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [categoryPickerOpen, setCategoryPickerOpen] = useState(true);
+  const [hasSelectedInitialCategory, setHasSelectedInitialCategory] =
+    useState(false);
   const debounceRef = useRef(null);
 
-  const EMPTY_FILTERS = { category_id: "", min_price: "", max_price: "", sort_by_price: "" };
+  const EMPTY_FILTERS = {
+    category_id: "",
+    min_price: "",
+    max_price: "",
+    sort_by_price: "",
+  };
   const [filters, setFilters] = useState(EMPTY_FILTERS);
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
@@ -287,6 +318,13 @@ export default function Marketplace() {
     staleTime: 1000 * 60 * 5,
   });
   const categories = categoriesData?.data || [];
+
+  const handleInitialCategorySelect = (categoryId) => {
+    setFilters((prev) => ({ ...prev, category_id: String(categoryId) }));
+    setPage(1);
+    setHasSelectedInitialCategory(true);
+    setCategoryPickerOpen(false);
+  };
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -325,7 +363,7 @@ export default function Marketplace() {
   const { data, isLoading } = useQuery({
     queryKey: [`/marketplace/listings?${qs.toString()}`, accessToken],
     queryFn: fetchWithToken,
-    enabled: !!accessToken,
+    enabled: !!accessToken && hasSelectedInitialCategory,
     keepPreviousData: true,
   });
 
@@ -387,7 +425,10 @@ export default function Marketplace() {
             </SheetHeader>
             <FilterPanel
               filters={filters}
-              setFilters={(f) => { setFilters(f); setPage(1); }}
+              setFilters={(f) => {
+                setFilters(f);
+                setPage(1);
+              }}
               categories={categories}
               categoriesLoading={categoriesLoading}
               onApply={() => setSheetOpen(false)}
@@ -413,7 +454,9 @@ export default function Marketplace() {
             <ActiveFilterBadges
               filters={filters}
               categories={categories}
-              onRemove={(key) => { removeFilter(key); }}
+              onRemove={(key) => {
+                removeFilter(key);
+              }}
             />
           </div>
 
@@ -422,7 +465,10 @@ export default function Marketplace() {
             <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
             <select
               value={filters.sort_by_price}
-              onChange={(e) => { setFilters((p) => ({ ...p, sort_by_price: e.target.value })); setPage(1); }}
+              onChange={(e) => {
+                setFilters((p) => ({ ...p, sort_by_price: e.target.value }));
+                setPage(1);
+              }}
               className="text-xs text-gray-600 border-none bg-transparent focus:outline-none cursor-pointer"
             >
               {SORT_OPTIONS.map((opt) => (
@@ -451,7 +497,10 @@ export default function Marketplace() {
             </p>
             {(activeSearch || activeFilterCount > 0) && (
               <button
-                onClick={() => { clearSearch(); resetAllFilters(); }}
+                onClick={() => {
+                  clearSearch();
+                  resetAllFilters();
+                }}
                 className="mt-2 text-sm text-secondary hover:underline"
               >
                 Clear all filters
@@ -491,6 +540,18 @@ export default function Marketplace() {
         open={!!selectedItemId}
         onClose={() => setSelectedItemId(null)}
         accessToken={accessToken}
+      />
+
+      <CategoryDialog
+        open={categoryPickerOpen}
+        onOpenChange={(nextOpen) => {
+          if (hasSelectedInitialCategory) {
+            setCategoryPickerOpen(nextOpen);
+          }
+        }}
+        categoriesLoading={categoriesLoading}
+        categories={categories}
+        onSelect={handleInitialCategorySelect}
       />
     </section>
   );

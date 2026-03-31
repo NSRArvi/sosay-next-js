@@ -15,6 +15,7 @@ import { MessageCircle, Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import Chatpanel from "@/components/message/Chatpanel";
 import UserProfilePost from "@/components/profile/UserProfilePost";
@@ -119,6 +120,7 @@ export default function ProfilePage() {
       {/* Profile Picture Dialog */}
       <Dialog open={openChatDialog} onOpenChange={setOpenChatDialog}>
         <DialogContent className="p-0">
+          <DialogTitle className="sr-only">Chat</DialogTitle>
           <div className="space-y-6 min-h-[80vh]">
             <Chatpanel receiver={receiver} />
           </div>

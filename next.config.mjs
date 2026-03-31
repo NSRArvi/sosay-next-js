@@ -14,8 +14,14 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'ui-avatars.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
-    domains: ["api.sosay.org","images.unsplash.com"],
+    domains: ["api.sosay.org","images.unsplash.com","ui-avatars.com"],
   },
 };
 

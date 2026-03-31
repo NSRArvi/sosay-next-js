@@ -2,7 +2,12 @@
 
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, ImagePlus, X, ChevronDown } from "lucide-react";
 import { useAppContext } from "@/context/context";
@@ -116,6 +121,10 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && resetAndClose()}>
       <DialogContent className="max-w-lg rounded-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Create New Listing</DialogTitle>
+        </DialogHeader>
+
         {/* Header */}
         <div className="flex items-center justify-between mb-1">
           <div>
@@ -176,7 +185,7 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
 
             {/* Price + Currency */}
             <div className="flex gap-2">
-              <div className="space-y-1 w-28 flex-shrink-0">
+              <div className="space-y-1 w-28 shrink-0">
                 <label className="text-xs font-medium text-gray-600">Currency</label>
                 <select
                   name="currency"

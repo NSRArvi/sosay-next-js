@@ -4,7 +4,12 @@ import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -166,6 +171,10 @@ function UpdateListingDialog({ open, onClose, item, accessToken, onSuccess }) {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-lg rounded-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Edit Listing</DialogTitle>
+        </DialogHeader>
+
         <div className="mb-1">
           <h2 className="text-base font-bold text-gray-800">Edit Listing</h2>
           <p className="text-xs text-gray-400 mt-0.5">Update your listing details below.</p>
@@ -203,7 +212,7 @@ function UpdateListingDialog({ open, onClose, item, accessToken, onSuccess }) {
 
           {/* Price + Currency */}
           <div className="flex gap-2">
-            <div className="space-y-1 w-28 flex-shrink-0">
+            <div className="space-y-1 w-28 shrink-0">
               <label className="text-xs font-medium text-gray-600">Currency</label>
               <select
                 name="currency"
@@ -428,6 +437,10 @@ function UpdateStatusDialog({ open, onClose, item, accessToken, onSuccess }) {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-sm rounded-2xl">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Update Listing Status</DialogTitle>
+        </DialogHeader>
+
         <div className="mb-4">
           <h2 className="text-base font-bold text-gray-800">Update Status</h2>
           <p className="text-xs text-gray-400 mt-0.5">Change the listing status.</p>

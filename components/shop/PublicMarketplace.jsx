@@ -42,6 +42,7 @@ import {
   ListingCard,
   ListingCardSkeleton,
 } from "@/components/shop/Listingcard";
+import CategoryDialog from "@/components/shop/CategoryDialog";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
 
@@ -437,6 +438,8 @@ export default function PublicMarketplace() {
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [showListingAuthDialog, setShowListingAuthDialog] = useState(false);
+  const [categoryPickerOpen, setCategoryPickerOpen] = useState(true);
+  const [hasSelectedInitialCategory, setHasSelectedInitialCategory] = useState(false);
   const debounceRef = useRef(null);
 
   const EMPTY_FILTERS = { category_id: "", min_price: "", max_price: "", sort_by_price: "" };
@@ -446,11 +449,18 @@ export default function PublicMarketplace() {
 
   // Fetch categories (public)
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
-    queryKey: [`${BASE_URL}/marketplace/categories`],
-    queryFn: () => fetchPublic("/marketplace/categories"),
+    queryKey: [`${BASE_URL}/marketplace/public/categories`],
+    queryFn: () => fetchPublic("/marketplace/public/categories"),
     staleTime: 1000 * 60 * 5,
   });
   const categories = categoriesData?.data || [];
+
+  const handleInitialCategorySelect = (categoryId) => {
+    setFilters((prev) => ({ ...prev, category_id: String(categoryId) }));
+    setPage(1);
+    setHasSelectedInitialCategory(true);
+    setCategoryPickerOpen(false);
+  };
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -490,6 +500,7 @@ export default function PublicMarketplace() {
   const { data, isLoading } = useQuery({
     queryKey: [`${BASE_URL}/marketplace/public/listings?${qs.toString()}`],
     queryFn: () => fetchPublic(`/marketplace/public/listings?${qs.toString()}`),
+    enabled: hasSelectedInitialCategory,
     keepPreviousData: true,
   });
 
@@ -711,6 +722,18 @@ export default function PublicMarketplace() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <CategoryDialog
+        open={categoryPickerOpen}
+        onOpenChange={(nextOpen) => {
+          if (hasSelectedInitialCategory) {
+            setCategoryPickerOpen(nextOpen);
+          }
+        }}
+        categoriesLoading={categoriesLoading}
+        categories={categories}
+        onSelect={handleInitialCategorySelect}
+      />
     </section>
   );
 }
