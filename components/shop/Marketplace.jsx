@@ -40,6 +40,8 @@ const SORT_OPTIONS = [
   { value: "desc", label: "Price: High to Low" },
 ];
 
+let hasShownInitialCategoryDialog = false;
+
 // ─── Pagination ────────────────────────────────────────────────────────────────
 
 function Pagination({ meta, page, onPageChange }) {
@@ -292,9 +294,11 @@ export default function Marketplace() {
   const [page, setPage] = useState(1);
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [categoryPickerOpen, setCategoryPickerOpen] = useState(true);
-  const [hasSelectedInitialCategory, setHasSelectedInitialCategory] =
-    useState(false);
+  const [categoryPickerOpen, setCategoryPickerOpen] = useState(() => {
+    if (hasShownInitialCategoryDialog) return false;
+    hasShownInitialCategoryDialog = true;
+    return true;
+  });
   const debounceRef = useRef(null);
   const [openChatDialog, setOpenChatDialog] = useState(false);
   const [receiver, setReceiver] = useState(null);
@@ -326,7 +330,6 @@ export default function Marketplace() {
   const handleInitialCategorySelect = (categoryId) => {
     setFilters((prev) => ({ ...prev, category_id: String(categoryId) }));
     setPage(1);
-    setHasSelectedInitialCategory(true);
     setCategoryPickerOpen(false);
   };
 
@@ -367,7 +370,7 @@ export default function Marketplace() {
   const { data, isLoading } = useQuery({
     queryKey: [`/marketplace/listings?${qs.toString()}`, accessToken],
     queryFn: fetchWithToken,
-    enabled: !!accessToken && hasSelectedInitialCategory,
+    enabled: !!accessToken,
     keepPreviousData: true,
   });
 
@@ -550,11 +553,7 @@ export default function Marketplace() {
 
       <CategoryDialog
         open={categoryPickerOpen}
-        onOpenChange={(nextOpen) => {
-          if (hasSelectedInitialCategory) {
-            setCategoryPickerOpen(nextOpen);
-          }
-        }}
+        onOpenChange={setCategoryPickerOpen}
         categoriesLoading={categoriesLoading}
         categories={categories}
         onSelect={handleInitialCategorySelect}

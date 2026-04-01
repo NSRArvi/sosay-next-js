@@ -1,29 +1,76 @@
 "use client";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import ChatHistory from "@/components/message/ChatHistory";
 import Chatpanel from "@/components/message/Chatpanel";
+import { useQuery } from "@tanstack/react-query";
+import { useAppContext } from "@/context/context";
+import { fetchWithToken } from "@/helpers/api";
 
-export default function page() {
+export default function Page() {
+  const { accessToken } = useAppContext();
   const [receiver, setReceiver] = useState(null);
   const [showChatPanel, setShowChatPanel] = useState(false);
-  
-  return (
-    <section className="relative lg:grid lg:grid-cols-2 gap-8 mt-14 md:mt-8 max-w-4xl mx-auto p-4">
-      {/* responsive desktop panel  */}
-      <ChatHistory
-        setReceiver={setReceiver}
-        receiver={receiver}
-        setShowChatPanel={setShowChatPanel}
-      />
 
-      <div className="hidden lg:block">
-        <Chatpanel receiver={receiver} />
+  const { data: chatHistory, isLoading: chatHistoryLoading } = useQuery({
+    queryKey: ["/chat/inbox", accessToken],
+    queryFn: fetchWithToken,
+    enabled: !!accessToken,
+  });
+
+  const defaultReceiver = useMemo(() => {
+    const chats = chatHistory?.data || [];
+    if (!Array.isArray(chats) || chats.length === 0) return null;
+    return chats[0];
+  }, [chatHistory]);
+
+  const desktopReceiver = receiver || defaultReceiver;
+  const mobileReceiver = receiver;
+  const isMobileChatPanelOpen = showChatPanel && Boolean(mobileReceiver);
+
+  const handleSelectChat = (chat) => {
+    setReceiver(chat);
+    setShowChatPanel(true);
+  };
+
+  return (
+    <section className="relative h-[calc(100dvh-56px)] md:h-[calc(100dvh-32px)] mt-14 md:mt-8 p-4 overflow-hidden">
+      <div className="hidden lg:flex gap-8 h-full">
+        <div className="lg:w-1/4 h-full overflow-hidden">
+          <ChatHistory
+            setReceiver={setReceiver}
+            receiver={desktopReceiver}
+            setShowChatPanel={setShowChatPanel}
+            chatHistoryData={chatHistory}
+            chatHistoryLoading={chatHistoryLoading}
+            onSelectChat={handleSelectChat}
+          />
+        </div>
+
+        <div className="lg:w-3/4 h-full overflow-hidden">
+          <Chatpanel receiver={desktopReceiver} />
+        </div>
       </div>
 
-      {/* responsive mobile panel  */}
-      {showChatPanel && (
-        <div className="fixed z-50 inset-0 bg-background lg:hidden">
-          <Chatpanel receiver={receiver} setShowChatPanel={setShowChatPanel} />
+      <div className="lg:hidden h-full overflow-hidden">
+        <ChatHistory
+          setReceiver={setReceiver}
+          receiver={mobileReceiver}
+          setShowChatPanel={setShowChatPanel}
+          chatHistoryData={chatHistory}
+          chatHistoryLoading={chatHistoryLoading}
+          onSelectChat={handleSelectChat}
+        />
+
+        {isMobileChatPanelOpen && mobileReceiver && (
+          <div className="fixed inset-0 z-50 bg-background lg:hidden">
+            <Chatpanel receiver={mobileReceiver} setShowChatPanel={setShowChatPanel} />
+          </div>
+        )}
+      </div>
+
+      {!desktopReceiver && !chatHistoryLoading && (
+        <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-none">
+          <p className="text-muted-foreground">No chats available yet</p>
         </div>
       )}
     </section>

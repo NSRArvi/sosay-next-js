@@ -52,6 +52,8 @@ const SORT_OPTIONS = [
   { value: "desc", label: "Price: High to Low" },
 ];
 
+let hasShownInitialCategoryDialog = false;
+
 // Public API fetch helper
 const fetchPublic = async (endpoint) => {
   const res = await fetch(`${BASE_URL}${endpoint}`);
@@ -438,8 +440,11 @@ export default function PublicMarketplace() {
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [showListingAuthDialog, setShowListingAuthDialog] = useState(false);
-  const [categoryPickerOpen, setCategoryPickerOpen] = useState(true);
-  const [hasSelectedInitialCategory, setHasSelectedInitialCategory] = useState(false);
+  const [categoryPickerOpen, setCategoryPickerOpen] = useState(() => {
+    if (hasShownInitialCategoryDialog) return false;
+    hasShownInitialCategoryDialog = true;
+    return true;
+  });
   const debounceRef = useRef(null);
 
   const EMPTY_FILTERS = { category_id: "", min_price: "", max_price: "", sort_by_price: "" };
@@ -458,7 +463,6 @@ export default function PublicMarketplace() {
   const handleInitialCategorySelect = (categoryId) => {
     setFilters((prev) => ({ ...prev, category_id: String(categoryId) }));
     setPage(1);
-    setHasSelectedInitialCategory(true);
     setCategoryPickerOpen(false);
   };
 
@@ -500,7 +504,7 @@ export default function PublicMarketplace() {
   const { data, isLoading } = useQuery({
     queryKey: [`${BASE_URL}/marketplace/public/listings?${qs.toString()}`],
     queryFn: () => fetchPublic(`/marketplace/public/listings?${qs.toString()}`),
-    enabled: hasSelectedInitialCategory,
+    enabled: true,
     keepPreviousData: true,
   });
 
@@ -725,11 +729,7 @@ export default function PublicMarketplace() {
 
       <CategoryDialog
         open={categoryPickerOpen}
-        onOpenChange={(nextOpen) => {
-          if (hasSelectedInitialCategory) {
-            setCategoryPickerOpen(nextOpen);
-          }
-        }}
+        onOpenChange={setCategoryPickerOpen}
         categoriesLoading={categoriesLoading}
         categories={categories}
         onSelect={handleInitialCategorySelect}

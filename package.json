@@ -45,6 +45,7 @@
     "react-hot-toast": "^2.6.0",
     "swiper": "^12.0.3",
     "tailwind-merge": "^3.4.0",
+    "yet-another-react-lightbox": "^3.30.1",
     "zod": "^4.1.12"
   },
   "devDependencies": {

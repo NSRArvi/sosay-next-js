@@ -8,7 +8,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import { useAppContext } from "@/context/context";
-import { Globe, Image, X } from "lucide-react";
+import { Globe, ImageIcon, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -146,7 +146,7 @@ export default function AddPostPage() {
         <div className="flex items-center gap-3">
           <Avatar className="h-12 w-12">
             <AvatarImage src={userInfo?.user_image} />
-            <AvatarFallback className="capitalize bg-gradient-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
+            <AvatarFallback className="capitalize bg-linear-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
               {userInfo?.name?.[0]}
             </AvatarFallback>
           </Avatar>
@@ -167,11 +167,12 @@ export default function AddPostPage() {
             {images.map((image, index) => (
               <div
                 key={index}
-                className="relative group rounded-lg overflow-hidden"
+                className="relative group rounded-lg overflow-hidden border bg-muted/30"
               >
                 <img
                   src={URL.createObjectURL(image)}
-                  className="w-full h-40 object-cover"
+                  alt={`Selected image ${index + 1}`}
+                  className="w-full h-56 bg-muted object-contain"
                 />
                 <button
                   className="cursor-pointer absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
@@ -185,7 +186,7 @@ export default function AddPostPage() {
         )}
 
         {/* Interests */}
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <p className="text-sm font-medium">Select labels</p>
           <div className="flex gap-2 flex-wrap">
             {interests?.map((interest) => (
@@ -203,7 +204,7 @@ export default function AddPostPage() {
               </Badge>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Footer Actions */}
         <div className="flex justify-between items-center pt-4 border-t">
@@ -221,7 +222,7 @@ export default function AddPostPage() {
               htmlFor="imageUploadInput"
               className="cursor-pointer size-10 rounded-full border flex justify-center items-center hover:shadow"
             >
-              <Image className="h-5 w-5" />
+              <ImageIcon className="h-5 w-5" />
             </label>
 
             {/* Visibility */}

@@ -1,18 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import NextImage from "next/image";
 
 // TipTap
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import { Globe, Image, X, Loader2, XCircle } from "lucide-react";
+import { Globe, ImageIcon, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,8 +32,11 @@ export default function UpdatePostPage() {
   const queryClient = useQueryClient();
 
   const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
-  console.log(existingImages);
+  const [loadedExistingImages, setLoadedExistingImages] = useState({});
+  const [loadedNewImages, setLoadedNewImages] = useState({});
+  const previewUrlsRef = useRef([]);
 
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [visibility, setVisibility] = useState(1);
@@ -83,15 +86,34 @@ export default function UpdatePostPage() {
     }
   }, [post, editor, isInitialized]);
 
+  useEffect(() => {
+    return () => {
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
+
   // Handle new image upload
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
+    previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    const previewUrls = files.map((file) => URL.createObjectURL(file));
+    previewUrlsRef.current = previewUrls;
+
     setImages(files);
+    setImagePreviews(previewUrls);
+    setLoadedNewImages({});
   };
 
   // Remove new image
   const removeImage = (index) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => {
+      const removed = prev[index];
+      if (removed) URL.revokeObjectURL(removed);
+      const next = prev.filter((_, i) => i !== index);
+      previewUrlsRef.current = next;
+      return next;
+    });
   };
 
   // Remove existing image
@@ -188,7 +210,7 @@ export default function UpdatePostPage() {
         <div className="flex items-center gap-3">
           <Avatar className="h-12 w-12">
             <AvatarImage src={userInfo?.user_image} />
-            <AvatarFallback className="capitalize bg-gradient-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
+            <AvatarFallback className="capitalize bg-linear-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
               {userInfo?.name?.[0]}
             </AvatarFallback>
           </Avatar>
@@ -211,13 +233,42 @@ export default function UpdatePostPage() {
               {existingImages.map((image, index) => (
                 <div
                   key={index}
-                  className="relative group rounded-lg overflow-hidden"
+                  className="relative group rounded-lg overflow-hidden border bg-muted/30"
                 >
-                  <img
-                    src={image.file_name || image}
-                    alt={`Existing ${index}`}
-                    className="w-full h-40 object-cover"
-                  />
+                  {(() => {
+                    const imageSrc = image.file_name || image;
+                    return (
+                      <div className="relative w-full h-56 bg-muted">
+                        {!loadedExistingImages[imageSrc] && (
+                          <div className="absolute inset-0 animate-pulse bg-accent" />
+                        )}
+                        <NextImage
+                          src={imageSrc}
+                          alt={`Existing ${index}`}
+                          fill
+                          unoptimized
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          onLoadingComplete={() =>
+                            setLoadedExistingImages((prev) => ({
+                              ...prev,
+                              [imageSrc]: true,
+                            }))
+                          }
+                          onError={() =>
+                            setLoadedExistingImages((prev) => ({
+                              ...prev,
+                              [imageSrc]: true,
+                            }))
+                          }
+                          className={`object-contain transition-opacity duration-300 ${
+                            loadedExistingImages[imageSrc]
+                              ? "opacity-100"
+                              : "opacity-0"
+                          }`}
+                        />
+                      </div>
+                    );
+                  })()}
                   <button
                     className="cursor-pointer absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
                     onClick={() => removeExistingImage(index)}
@@ -231,20 +282,42 @@ export default function UpdatePostPage() {
         )}
 
         {/* New Image Preview */}
-        {images.length > 0 && (
+        {imagePreviews.length > 0 && (
           <div className="space-y-2">
             <p className="text-sm font-medium">New Images</p>
             <div className="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
-              {images.map((image, index) => (
+              {imagePreviews.map((previewUrl, index) => (
                 <div
                   key={index}
-                  className="relative group rounded-lg overflow-hidden"
+                  className="relative group rounded-lg overflow-hidden border bg-muted/30"
                 >
-                  <Image
-                    src={URL.createObjectURL(image)}
-                    alt={`New ${index}`}
-                    className="w-full h-40 object-cover"
-                  />
+                  <div className="relative w-full h-56 bg-muted">
+                    {!loadedNewImages[previewUrl] && (
+                      <div className="absolute inset-0 animate-pulse bg-accent" />
+                    )}
+                    <NextImage
+                      src={previewUrl}
+                      alt={`New ${index}`}
+                      fill
+                      unoptimized
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      onLoadingComplete={() =>
+                        setLoadedNewImages((prev) => ({
+                          ...prev,
+                          [previewUrl]: true,
+                        }))
+                      }
+                      onError={() =>
+                        setLoadedNewImages((prev) => ({
+                          ...prev,
+                          [previewUrl]: true,
+                        }))
+                      }
+                      className={`object-contain transition-opacity duration-300 ${
+                        loadedNewImages[previewUrl] ? "opacity-100" : "opacity-0"
+                      }`}
+                    />
+                  </div>
                   <button
                     className="cursor-pointer absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
                     onClick={() => removeImage(index)}
@@ -258,7 +331,7 @@ export default function UpdatePostPage() {
         )}
 
         {/* Interests */}
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <p className="text-sm font-medium">Select labels</p>
           <div className="flex gap-2 flex-wrap">
             {interests?.map((interest) => (
@@ -276,7 +349,7 @@ export default function UpdatePostPage() {
               </Badge>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Footer Actions */}
         <div className="flex justify-between items-center pt-4 border-t">
@@ -294,7 +367,7 @@ export default function UpdatePostPage() {
               htmlFor="imageUploadInput"
               className="cursor-pointer size-10 rounded-full border flex justify-center items-center hover:shadow"
             >
-              <Image className="h-5 w-5" />
+              <ImageIcon className="h-5 w-5" />
             </label>
 
             {/* Visibility */}

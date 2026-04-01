@@ -67,7 +67,7 @@ function ChatCard({ chat, receiver }) {
           <div className="relative">
             <Avatar className="h-12 w-12">
               <AvatarImage src={chat.avatar} alt={chat.name} />
-              <AvatarFallback className="capitalize bg-gradient-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
+              <AvatarFallback className="capitalize bg-linear-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
                 {getInitials(chat.name)}
               </AvatarFallback>
             </Avatar>
@@ -119,16 +119,34 @@ export default function ChatHistory({
   setReceiver,
   receiver,
   setShowChatPanel,
+  chatHistoryData,
+  chatHistoryLoading,
+  onSelectChat,
 }) {
   const { accessToken } = useAppContext();
   const [isSearching, setIsSearching] = useState(false);
 
   // Fetch chat history
-  const { data: chatHistory, isLoading: chatHistoryLoading } = useQuery({
+  const { data: fallbackChatHistory, isLoading: fallbackChatHistoryLoading } = useQuery({
     queryKey: ["/chat/inbox", accessToken],
     queryFn: fetchWithToken,
-    enabled: !!accessToken,
+    enabled: !!accessToken && !chatHistoryData,
   });
+
+  const chatHistory = chatHistoryData || fallbackChatHistory;
+  const isLoading = typeof chatHistoryLoading === "boolean"
+    ? chatHistoryLoading
+    : fallbackChatHistoryLoading;
+
+  const handleSelectChat = (chat) => {
+    if (onSelectChat) {
+      onSelectChat(chat);
+      return;
+    }
+
+    setReceiver(chat);
+    setShowChatPanel(true);
+  };
 
   return (
     <section>
@@ -139,11 +157,15 @@ export default function ChatHistory({
         </p>
       </div>
 
-      <ChatSearch isSearching={isSearching} setIsSearching={setIsSearching} setReceiver={setReceiver} />
+      <ChatSearch
+        isSearching={isSearching}
+        setIsSearching={setIsSearching}
+        setReceiver={(chat) => handleSelectChat(chat)}
+      />
 
       {!isSearching && (
         <div className="h-[calc(100dvh-192px)] overflow-y-auto mt-8">
-          {chatHistoryLoading ? (
+          {isLoading ? (
             // Show skeleton loaders
             <div>
               {[...Array(5)].map((_, index) => (
@@ -157,8 +179,7 @@ export default function ChatHistory({
                 <button
                   key={chat.user_id}
                   onClick={() => {
-                    setReceiver(chat);
-                    setShowChatPanel(true);
+                    handleSelectChat(chat);
                   }}
                   className="cursor-pointer w-full"
                 >

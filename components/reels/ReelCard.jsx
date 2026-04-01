@@ -1,87 +1,36 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React from "react";
 import Image from "next/image";
-import toast from "react-hot-toast";
-import {
-  Play,
-  Volume2,
-  VolumeX,
-  Eye,
-} from "lucide-react";
+import { Play, Eye } from "lucide-react";
 
-export default function ReelCard({ reel }) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [muted, setMuted] = useState(true);
-  const videoRef = useRef(null);
+export default function ReelCard({ reel, onView }) {
   const videoSrc = reel?.video_url || "";
 
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        videoRef.current
-          .play()
-          .then(() => setIsPlaying(true))
-          .catch(() => {
-            toast.error("Unable to play this video");
-          });
-      }
-    }
-  };
-
   return (
-    <div className="group relative rounded-xl overflow-hidden bg-black aspect-3/5 cursor-pointer">
+    <button
+      type="button"
+      onClick={() => onView?.()}
+      className="group relative rounded-xl overflow-hidden bg-black aspect-3/5 cursor-pointer w-full text-left"
+    >
       <video
-        ref={videoRef}
         src={videoSrc}
         className="w-full h-full object-cover"
-        muted={muted}
+        muted
         playsInline
         preload="metadata"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onError={() => toast.error("This video could not be loaded")}
-        onClick={togglePlay}
       />
 
       {/* Overlay on hover */}
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-        <button
-          onClick={togglePlay}
-          className="bg-secondary/90 hover:bg-secondary p-3 rounded-full transition"
-        >
+        <span className="bg-secondary/90 hover:bg-secondary p-3 rounded-full transition">
           <Play className="h-6 w-6 text-black fill-black" />
-        </button>
+        </span>
       </div>
 
-      {/* Play/Pause Button (always visible for clarity) */}
-      {!isPlaying && (
-        <button
-          type="button"
-          onClick={togglePlay}
-          className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-transparent transition"
-        >
-          <Play className="h-8 w-8 text-white fill-white" />
-        </button>
-      )}
-
-      {/* Mute Toggle (top right) */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setMuted(!muted);
-        }}
-        className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 p-1.5 rounded-full text-white transition opacity-0 group-hover:opacity-100"
-      >
-        {muted ? (
-          <VolumeX className="h-4 w-4" />
-        ) : (
-          <Volume2 className="h-4 w-4" />
-        )}
-      </button>
+      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-transparent transition">
+        <Play className="h-8 w-8 text-white fill-white" />
+      </div>
 
       {/* Stats (bottom left) */}
       <div className="absolute bottom-2 left-2 flex gap-2 text-xs text-white bg-black/60 rounded-lg px-2 py-1">
@@ -110,6 +59,6 @@ export default function ReelCard({ reel }) {
           {reel.caption}
         </div>
       )}
-    </div>
+    </button>
   );
 }

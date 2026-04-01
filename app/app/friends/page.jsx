@@ -3,30 +3,17 @@ import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Users } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { fetchWithToken } from "@/helpers/api";
 import toast from "react-hot-toast";
 import UserCard from "@/components/friends/UserCard";
-
-// Skeleton Loader Component
-const UserCardSkeleton = () => (
-  <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 border rounded-2xl overflow-hidden h-80">
-    <div className="absolute inset-0 animate-pulse">
-      <Skeleton className="h-full w-full" />
-      <div className="absolute bottom-0 left-0 right-0 p-6">
-        <Skeleton className="h-6 w-3/4 mx-auto mb-2 rounded-full" />
-        <Skeleton className="h-4 w-1/2 mx-auto rounded-full" />
-      </div>
-    </div>
-  </div>
-);
+import UserCardSkleton from "@/components/friends/UserCardSkleton";
 
 const UserCardSkeletonList = () => (
   <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
     {[...Array(6)].map((_, i) => (
-      <UserCardSkeleton key={i} />
+      <UserCardSkleton key={i} />
     ))}
   </div>
 );

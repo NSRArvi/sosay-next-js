@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import NextImage from "next/image";
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
 import { useAppContext } from "@/context/context";
@@ -60,7 +61,7 @@ function EmojiPicker({ onSelect, onClose, pickerRef }) {
             <button
               key={cat.name}
               onClick={() => scrollToCategory(i)}
-              className={`text-lg flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md transition-colors
+              className={`text-lg shrink-0 w-8 h-8 flex items-center justify-center rounded-md transition-colors
                 ${activeCategory === i ? "bg-secondary" : "hover:bg-muted"}`}
             >
               {cat.label}
@@ -136,6 +137,9 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedImagePreview, setSelectedImagePreview] = useState("");
+  const [isSelectedPreviewLoading, setIsSelectedPreviewLoading] = useState(false);
+  const [loadedMessageImages, setLoadedMessageImages] = useState({});
   const [isSending, setIsSending] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef(null);
@@ -178,7 +182,13 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
   }, [chatHistory]);
 
   useEffect(() => {
-    if (!accessToken || !userInfo?.id) return;
+    if (!accessToken || !userInfo?.id || !receiver?.user_id) {
+      setChatHistory([]);
+      setIsLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
 
     const fetchHistory = async () => {
       try {
@@ -190,14 +200,9 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
               Authorization: `Bearer ${accessToken}`,
               "Content-Type": "application/json",
             },
+            signal: controller.signal,
           }
         );
-
-        if (response) {
-          queryClient.invalidateQueries({
-            queryKey: [`/chat/inbox`],
-          });
-        }
 
         const data = await response.json();
         const messages = Array.isArray(data) ? data : data.data;
@@ -219,6 +224,7 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
 
         setChatHistory(formattedHistory);
       } catch (error) {
+        if (error?.name === "AbortError") return;
         console.error("Could not fetch history", error);
       } finally {
         setIsLoading(false);
@@ -245,19 +251,49 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
     });
 
     return () => {
+      controller.abort();
       channel.stopListening(".message.sent");
       echo.leave(`chat.${userInfo.id}`);
     };
-  }, [accessToken, userInfo, receiver]);
+  }, [accessToken, userInfo?.id, receiver?.user_id]);
 
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
-    if (file) setSelectedFile(file);
+    if (!file) return;
+
+    if (selectedImagePreview) {
+      URL.revokeObjectURL(selectedImagePreview);
+      setSelectedImagePreview("");
+    }
+
+    setSelectedFile(file);
+    if (file.type?.startsWith("image/")) {
+      setIsSelectedPreviewLoading(true);
+      setSelectedImagePreview(URL.createObjectURL(file));
+    }
   };
 
   const removeSelectedFile = () => {
+    if (selectedImagePreview) {
+      URL.revokeObjectURL(selectedImagePreview);
+      setSelectedImagePreview("");
+    }
+    setIsSelectedPreviewLoading(false);
     setSelectedFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const markMessageImageLoaded = (fileUrl) => {
+    if (!fileUrl) return;
+    setLoadedMessageImages((prev) => ({ ...prev, [fileUrl]: true }));
+  };
+
+  const isImageFile = (fileUrl) => {
+    if (!fileUrl) return false;
+    const normalized = String(fileUrl).toLowerCase();
+    if (normalized.startsWith("blob:") || normalized.startsWith("data:image/")) return true;
+    const cleanUrl = normalized.split("?")[0].split("#")[0];
+    return /\.(png|jpe?g|gif|webp|bmp|svg|avif|heic|heif)$/.test(cleanUrl);
   };
 
   const getFileNameFromUrl = (url) => {
@@ -267,6 +303,14 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
     } catch {
       return "file";
     }
+  };
+
+  const getFileExtension = (nameOrUrl) => {
+    const fileName = getFileNameFromUrl(nameOrUrl || "");
+    const cleanName = fileName.split("?")[0].split("#")[0];
+    const parts = cleanName.split(".");
+    if (parts.length < 2) return "FILE";
+    return parts.pop().toUpperCase();
   };
 
   const sendMessage = async () => {
@@ -352,7 +396,7 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
             </button>
             <Avatar className="h-10 w-10">
               <AvatarImage src={receiver?.avatar} alt={receiver?.name} />
-              <AvatarFallback className="capitalize bg-gradient-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
+              <AvatarFallback className="capitalize bg-linear-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
                 {getInitials(receiver?.name || "")}
               </AvatarFallback>
             </Avatar>
@@ -382,37 +426,101 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
               </div>
             ) : (
               chatHistory.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`flex ${msg.sender === "Me" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                      msg.sender === "Me"
-                        ? "bg-secondary text-primary-foreground rounded-br-sm"
-                        : "bg-muted text-foreground rounded-bl-sm"
-                    }`}
-                  >
-                    {msg.isFile ? (
-                      <div className="flex items-center gap-2">
-                        <Paperclip className="h-4 w-4" />
-                        <a
-                          href={msg.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm underline break-all hover:opacity-80"
-                        >
-                          {getFileNameFromUrl(msg.fileUrl || msg.text)}
-                        </a>
-                        <a href={msg.fileUrl} download className="hover:opacity-80">
-                          <Download className="h-4 w-4" />
-                        </a>
+                (() => {
+                  const fileUrl = msg.fileUrl || msg.text;
+                  const isImageMessage = msg.isFile && isImageFile(fileUrl);
+                  const isSender = msg.sender === "Me";
+
+                  return (
+                    <div
+                      key={index}
+                      className={`flex ${isSender ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`max-w-[70%] rounded-2xl ${
+                          isImageMessage
+                            ? "bg-transparent p-0"
+                            : isSender
+                              ? "bg-secondary text-primary-foreground rounded-br-sm px-4 py-2"
+                              : "bg-muted text-foreground rounded-bl-sm px-4 py-2"
+                        }`}
+                      >
+                        {msg.isFile ? (
+                          isImageMessage ? (
+                            <a
+                              href={fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block"
+                            >
+                              <div className="relative h-72 w-full min-w-[220px] rounded-lg overflow-hidden bg-transparent border border-border/50">
+                                {!loadedMessageImages[fileUrl] && (
+                                  <div className="absolute inset-0 animate-pulse bg-muted/60" />
+                                )}
+                                <NextImage
+                                  src={fileUrl}
+                                  alt="Shared image"
+                                  fill
+                                  unoptimized
+                                  sizes="(max-width: 768px) 80vw, 320px"
+                                  className="object-contain"
+                                  onLoad={() => markMessageImageLoaded(fileUrl)}
+                                  onError={() => markMessageImageLoaded(fileUrl)}
+                                />
+                              </div>
+                            </a>
+                          ) : (
+                            <div
+                              className={`min-w-[220px] rounded-xl border px-3 py-2.5 ${
+                                isSender
+                                  ? "bg-secondary/90 border-white/35"
+                                  : "bg-background border-border/80"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <Paperclip className="h-4 w-4 shrink-0" />
+                                  <p className="text-sm font-medium truncate">
+                                    {getFileNameFromUrl(fileUrl)}
+                                  </p>
+                                </div>
+                                <span
+                                  className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                                    isSender
+                                      ? "bg-white/20 text-white"
+                                      : "bg-muted text-muted-foreground"
+                                  }`}
+                                >
+                                  {getFileExtension(fileUrl)}
+                                </span>
+                              </div>
+                              <div className="mt-2 flex items-center gap-2">
+                                <a
+                                  href={fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs underline hover:opacity-80"
+                                >
+                                  Open
+                                </a>
+                                <a
+                                  href={fileUrl}
+                                  download
+                                  className="inline-flex items-center gap-1 text-xs underline hover:opacity-80"
+                                >
+                                  <Download className="h-3.5 w-3.5" />
+                                  Download
+                                </a>
+                              </div>
+                            </div>
+                          )
+                        ) : (
+                          <p className="text-sm wrap-break-word">{msg.text}</p>
+                        )}
                       </div>
-                    ) : (
-                      <p className="text-sm break-words">{msg.text}</p>
-                    )}
-                  </div>
-                </div>
+                    </div>
+                  );
+                })()
               ))
             )}
             <div ref={messagesEndRef} />
@@ -422,17 +530,45 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
           <div className="border-t p-4 bg-card lg:rounded-b-xl">
             {/* File Preview */}
             {selectedFile && (
-              <div className="mb-2 p-2 bg-muted rounded-lg flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Paperclip className="h-4 w-4" />
-                  <span className="text-sm truncate max-w-[200px]">{selectedFile.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    ({(selectedFile.size / 1024).toFixed(2)} KB)
-                  </span>
-                </div>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={removeSelectedFile}>
-                  <X className="h-4 w-4" />
-                </Button>
+              <div className="mb-2 p-2 bg-muted rounded-lg">
+                {selectedImagePreview ? (
+                  <div className="space-y-2">
+                    <div className="relative h-72 w-full bg-transparent rounded-lg overflow-hidden border border-border/50">
+                      {isSelectedPreviewLoading && (
+                        <div className="absolute inset-0 animate-pulse bg-muted/60" />
+                      )}
+                      <NextImage
+                        src={selectedImagePreview}
+                        alt="Selected image preview"
+                        fill
+                        unoptimized
+                        sizes="(max-width: 768px) 100vw, 420px"
+                        className="object-contain"
+                        onLoad={() => setIsSelectedPreviewLoading(false)}
+                        onError={() => setIsSelectedPreviewLoading(false)}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm truncate max-w-[220px]">{selectedFile.name}</span>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={removeSelectedFile}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Paperclip className="h-4 w-4" />
+                      <span className="text-sm truncate max-w-[200px]">{selectedFile.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        ({(selectedFile.size / 1024).toFixed(2)} KB)
+                      </span>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={removeSelectedFile}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 

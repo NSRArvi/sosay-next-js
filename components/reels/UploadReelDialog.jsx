@@ -158,7 +158,7 @@ export default function UploadReelDialog({
               <div className="relative rounded-lg overflow-hidden bg-black">
                 <video
                   src={videoPreview}
-                  className="w-full h-40 object-cover"
+                  className="w-full h-full object-cover"
                   controls
                 />
                 <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
