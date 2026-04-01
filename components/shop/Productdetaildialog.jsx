@@ -30,7 +30,11 @@ const CONDITION_LABELS = {
   used_poor: "Poor",
 };
 
-function DetailContent({ itemId, accessToken }) {
+function DetailContent({
+  itemId,
+  accessToken,
+  onContactSeller,
+}) {
   const [activeImage, setActiveImage] = useState(0);
 
   const { data, isLoading, isError } = useQuery({
@@ -58,7 +62,8 @@ function DetailContent({ itemId, accessToken }) {
   }
 
   const item = data.data;
-  const conditionStyle = CONDITION_STYLES[item.condition] || CONDITION_STYLES["used_fair"];
+  const conditionStyle =
+    CONDITION_STYLES[item.condition] || CONDITION_STYLES["used_fair"];
   const conditionLabel = CONDITION_LABELS[item.condition] || item.condition;
   const images = item.images || [];
 
@@ -166,7 +171,12 @@ function DetailContent({ itemId, accessToken }) {
         </div>
 
         {/* CTA */}
-        <Button className="w-full bg-secondary hover:bg-secondary/90 rounded-full gap-2 mt-2">
+        <Button
+          onClick={() => {
+            onContactSeller?.(item.user);
+          }}
+          className="w-full bg-secondary hover:bg-secondary/90 rounded-full gap-2 mt-2"
+        >
           <MessageCircle className="h-4 w-4" />
           Contact Seller
         </Button>
@@ -175,7 +185,20 @@ function DetailContent({ itemId, accessToken }) {
   );
 }
 
-export function ProductDetailDialog({ itemId, open, onClose, accessToken }) {
+export function ProductDetailDialog({
+  itemId,
+  open,
+  onClose,
+  accessToken,
+  setOpenChatDialog,
+  setReceiver,
+}) {
+  const handleContactSeller = (seller) => {
+    onClose?.();
+    setReceiver?.(seller);
+    setOpenChatDialog?.(true);
+  };
+
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-lg overflow-hidden rounded-2xl gap-0">
@@ -185,7 +208,11 @@ export function ProductDetailDialog({ itemId, open, onClose, accessToken }) {
 
         {/* Only render (and fetch) when open and itemId is set */}
         {open && itemId && (
-          <DetailContent itemId={itemId} accessToken={accessToken} />
+          <DetailContent
+            itemId={itemId}
+            accessToken={accessToken}
+            onContactSeller={handleContactSeller}
+          />
         )}
       </DialogContent>
     </Dialog>

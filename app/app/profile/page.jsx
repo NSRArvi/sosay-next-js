@@ -18,7 +18,6 @@ import Image from "next/image";
 import defaultCover from "../../assets/designs/Welcome.png";
 import defaultProfile from "../../assets/designs/girl.png";
 import Link from "next/link";
-import { is } from "zod/v4/locales";
 
 export default function ProfilePage() {
   const { userInfo, setUserInfo, accessToken, isUserVerified } =

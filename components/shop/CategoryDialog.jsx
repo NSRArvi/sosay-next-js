@@ -24,12 +24,19 @@ export default function CategoryDialog({
         </DialogHeader>
 
         {categoriesLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
             {Array.from({ length: 10 }).map((_, idx) => (
               <div
                 key={idx}
-                className="aspect-3/5 rounded-xl border border-gray-200 bg-gray-50 animate-pulse"
-              />
+                className="overflow-hidden rounded-2xl shadow-md"
+              >
+                <div className="relative aspect-3/5 w-full overflow-hidden bg-gray-100 animate-pulse">
+                  <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5">
+                    <div className="h-4 w-3/4 rounded bg-white/70" />
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         ) : categories.length === 0 ? (

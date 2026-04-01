@@ -30,7 +30,7 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex gap-2 items-center">
             <div className="text-2xl lg:text-3xl font-bold text-foreground">
-              <span className="text-destructive">SoSay</span>
+              <span className="text-destructive">Sosay</span>
             </div>
           </div>
 
@@ -86,7 +86,7 @@ export default function Navbar() {
               onClick={() => setView(false)}
             />
             <div className="text-xl lg:text-2xl font-bold">
-              <span className="text-destructive">SoSay</span>
+              <span className="text-destructive">Sosay</span>
             </div>
           </div>
 

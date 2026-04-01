@@ -29,6 +29,8 @@ import {
 } from "@/components/shop/Listingcard";
 import { ProductDetailDialog } from "@/components/shop/Productdetaildialog";
 import CategoryDialog from "@/components/shop/CategoryDialog";
+import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
+import Chatpanel from "../message/Chatpanel";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
 
@@ -294,6 +296,8 @@ export default function Marketplace() {
   const [hasSelectedInitialCategory, setHasSelectedInitialCategory] =
     useState(false);
   const debounceRef = useRef(null);
+  const [openChatDialog, setOpenChatDialog] = useState(false);
+  const [receiver, setReceiver] = useState(null);
 
   const EMPTY_FILTERS = {
     category_id: "",
@@ -540,6 +544,8 @@ export default function Marketplace() {
         open={!!selectedItemId}
         onClose={() => setSelectedItemId(null)}
         accessToken={accessToken}
+        setOpenChatDialog={setOpenChatDialog}
+        setReceiver={setReceiver}
       />
 
       <CategoryDialog
@@ -553,6 +559,16 @@ export default function Marketplace() {
         categories={categories}
         onSelect={handleInitialCategorySelect}
       />
+
+      {/* Chat Panel Dialog */}
+      <Dialog open={openChatDialog} onOpenChange={setOpenChatDialog}>
+        <DialogContent className="p-0">
+          <DialogTitle className="sr-only">Chat</DialogTitle>
+          <div className="space-y-6 min-h-[80vh]">
+            <Chatpanel receiver={receiver} />
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

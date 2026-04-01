@@ -10,8 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReelCard from "@/components/reels/ReelCard";
 import UploadReelDialog from "@/components/reels/UploadReelDialog";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
-
 export default function ReelsPage() {
   const { accessToken } = useAppContext();
   const [activeTab, setActiveTab] = useState("reels");
@@ -32,10 +30,10 @@ export default function ReelsPage() {
 
   // Fetch user's reels (my reels)
   const { data: myReelsData, isLoading: myReelsLoading } = useQuery({
-    queryKey: ["/reels", accessToken, pageMyReels],
+    queryKey: ["/my-reels", accessToken, pageMyReels],
     queryFn: () =>
       fetchWithToken({
-        queryKey: [`/reels${pageMyReels}`, accessToken],
+        queryKey: [`/my-reels?page=${pageMyReels}`, accessToken],
       }),
     enabled: !!accessToken,
     keepPreviousData: true,

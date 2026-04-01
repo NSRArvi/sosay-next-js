@@ -1,15 +1,12 @@
 "use client";
 import React, { useState } from "react";
 import { useAppContext } from "@/context/context";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchWithToken, postWithToken, putWithToken } from "@/helpers/api";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { fetchWithToken, postWithToken } from "@/helpers/api";
 import toast from "react-hot-toast";
 
-import ProfilePost from "@/components/profile/ProfilePost";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import defaultCover from "../../../assets/designs/Welcome.png";
-import defaultProfile from "../../../assets/designs/girl.png";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Plus } from "lucide-react";
 import {
@@ -19,6 +16,37 @@ import {
 } from "@/components/ui/dialog";
 import Chatpanel from "@/components/message/Chatpanel";
 import UserProfilePost from "@/components/profile/UserProfilePost";
+
+function ProfilePicture({ src }) {
+  const [isLoading, setIsLoading] = useState(Boolean(src));
+  const [hasError, setHasError] = useState(false);
+
+  return (
+    <div className="size-32 md:size-40 rounded-full border-4 border-white bg-muted overflow-hidden flex items-center justify-center relative">
+      {src && !hasError ? (
+        <>
+          {isLoading && (
+            <div className="absolute inset-0 rounded-full bg-accent animate-pulse" />
+          )}
+          <Image
+            src={src}
+            alt="Profile Image"
+            className="size-32 md:size-40 rounded-full object-cover"
+            height={500}
+            width={500}
+            onLoad={() => setIsLoading(false)}
+            onError={() => {
+              setHasError(true);
+              setIsLoading(false);
+            }}
+          />
+        </>
+      ) : (
+        <div className="absolute inset-0 rounded-full bg-accent animate-pulse" />
+      )}
+    </div>
+  );
+}
 
 export default function ProfilePage() {
   const { id } = useParams();
@@ -66,30 +94,43 @@ export default function ProfilePage() {
     <section className="max-w-2xl mx-auto space-y-6 px-4 mt-14 md:mt-0">
       {/* Cover Picture */}
       <div className="relative">
-        <Image
-          src={profileData?.profile_cover_picture || defaultCover}
-          className="w-full h-[200px] md:h-[300px] rounded-b-xl object-cover"
-          alt="Cover Image"
-          height={1000}
-          width={1000}
-        />
+        {profileDataLoading ? (
+          <div className="w-full h-[200px] md:h-[300px] rounded-b-xl bg-accent animate-pulse" />
+        ) : profileData?.profile_cover_picture ? (
+          <Image
+            src={profileData.profile_cover_picture}
+            className="w-full h-[200px] md:h-[300px] rounded-b-xl object-cover"
+            alt="Cover Image"
+            height={1000}
+            width={1000}
+          />
+        ) : (
+          <div className="w-full h-[200px] md:h-[300px] rounded-b-xl bg-muted flex items-center justify-center text-sm md:text-base font-medium text-muted-foreground">
+            No Cover Picture added
+          </div>
+        )}
       </div>
 
       {/* Profile Picture and Info */}
       <div className="max-w-5xl mx-auto px-5">
         <div className="flex flex-col md:flex-row items-center md:items-end gap-4 -mt-16 md:-mt-20">
           <div className="relative">
-            <Image
-              src={profileData?.profile_picture || defaultProfile}
-              alt="Profile Image"
-              className="size-32 md:size-40 rounded-full object-cover border-4 border-white"
-              height={500}
-              width={500}
-            />
+            {profileDataLoading ? (
+              <div className="size-32 md:size-40 rounded-full border-4 border-white bg-accent animate-pulse" />
+            ) : (
+              <ProfilePicture
+                key={profileData?.profile_picture || "profile-picture"}
+                src={profileData?.profile_picture}
+              />
+            )}
           </div>
           <div className="text-center md:text-left md:mb-4">
             <h1 className="text-2xl md:text-3xl font-bold dark:text-white">
-              {profileData?.name}
+              {profileDataLoading ? (
+                <span className="inline-block h-7 w-44 rounded bg-accent animate-pulse" />
+              ) : (
+                profileData?.name
+              )}
             </h1>
 
             <div className="flex gap-2 mt-2">
@@ -117,7 +158,7 @@ export default function ProfilePage() {
       {/* Profile created posts */}
       <UserProfilePost id={id} />
 
-      {/* Profile Picture Dialog */}
+      {/* Chat Panel Dialog */}
       <Dialog open={openChatDialog} onOpenChange={setOpenChatDialog}>
         <DialogContent className="p-0">
           <DialogTitle className="sr-only">Chat</DialogTitle>

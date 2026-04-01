@@ -38,7 +38,7 @@ export default function TopBar() {
     )}>
       {/* brand logo  */}
       <div className="md:w-64 px-5 py-2 bg-white">
-        <p className="font-bold text-2xl lg:text-4xl text-secondary">SoSay</p>
+        <p className="font-bold text-2xl lg:text-4xl text-secondary">Sosay</p>
       </div>
 
       {/* middle menus  */}

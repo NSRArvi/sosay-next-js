@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { Eye, Loader2, UserCheck, UserPlus, UserMinus, X, Check } from "lucide-react";
+import Link from "next/link";
 
 export default function UserCard({ user, type, onAction, isLoading, currentAction }) {
   const getActionButtons = () => {
@@ -94,7 +95,7 @@ export default function UserCard({ user, type, onAction, isLoading, currentActio
   };
 
   return (
-    <div className="relative group overflow-hidden rounded-lg shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:scale-[1.02]">
+    <Link href={`/app/profile/${user?.id}`} className="relative group overflow-hidden rounded-lg shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:scale-[1.02]">
       {/* Background Image or Gradient */}
       <div className="relative h-80 w-full">
         {user?.user_image ? (
@@ -153,6 +154,6 @@ export default function UserCard({ user, type, onAction, isLoading, currentActio
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
       </div>
-    </div>
+    </Link>
   );
 }
