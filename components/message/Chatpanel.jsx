@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import NextImage from "next/image";
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Paperclip, X, Download, Smile } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
 
 import { EMOJI_CATEGORIES, ALL_EMOJIS } from "./Emojidata";
 
@@ -17,12 +19,14 @@ function EmojiPicker({ onSelect, onClose, pickerRef }) {
   const [activeCategory, setActiveCategory] = useState(0);
   const scrollRef = useRef(null);
 
-  // Filtered results — every typed word must appear at the start of some keyword word
+  // Filtered results — supports category + keyword partial matching (e.g. "people")
   const filtered = search.trim()
     ? (() => {
         const terms = search.trim().toLowerCase().split(/\s+/);
-        return ALL_EMOJIS.filter(({ keywords }) =>
+        return ALL_EMOJIS.filter(({ keywords, category }) =>
           terms.every((term) =>
+            category.toLowerCase().includes(term) ||
+            keywords.includes(term) ||
             keywords.split(/\s+/).some((word) => word.startsWith(term))
           )
         );
@@ -56,12 +60,12 @@ function EmojiPicker({ onSelect, onClose, pickerRef }) {
 
       {/* Category Tabs */}
       {!search.trim() && (
-        <div className="flex gap-1 px-2 pt-2 pb-1 overflow-x-auto">
+        <div className="grid grid-cols-6 gap-1 px-2 pt-2 pb-1">
           {EMOJI_CATEGORIES.map((cat, i) => (
             <button
               key={cat.name}
               onClick={() => scrollToCategory(i)}
-              className={`text-lg shrink-0 w-8 h-8 flex items-center justify-center rounded-md transition-colors
+              className={`text-lg w-8 h-8 flex items-center justify-center rounded-md transition-colors
                 ${activeCategory === i ? "bg-secondary" : "hover:bg-muted"}`}
             >
               {cat.label}
@@ -142,6 +146,8 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
   const [loadedMessageImages, setLoadedMessageImages] = useState({});
   const [isSending, setIsSending] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const inputRef = useRef(null);
@@ -313,6 +319,21 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
     return parts.pop().toUpperCase();
   };
 
+  const imageSlides = useMemo(() => {
+    return chatHistory
+      .filter((msg) => {
+        const fileUrl = msg.fileUrl || msg.text;
+        return msg.isFile && isImageFile(fileUrl);
+      })
+      .map((msg) => ({ src: msg.fileUrl || msg.text }));
+  }, [chatHistory]);
+
+  const openImageLightbox = (fileUrl) => {
+    const index = imageSlides.findIndex((slide) => slide.src === fileUrl);
+    setLightboxIndex(index >= 0 ? index : 0);
+    setIsLightboxOpen(true);
+  };
+
   const sendMessage = async () => {
     if ((!message.trim() && !selectedFile) || !accessToken || isSending) return;
     setIsSending(true);
@@ -447,11 +468,11 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                       >
                         {msg.isFile ? (
                           isImageMessage ? (
-                            <a
-                              href={fileUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
+                              type="button"
+                              onClick={() => openImageLightbox(fileUrl)}
                               className="block"
+                              aria-label="Open image preview"
                             >
                               <div className="relative h-72 w-full min-w-[220px] rounded-lg overflow-hidden bg-transparent border border-border/50">
                                 {!loadedMessageImages[fileUrl] && (
@@ -468,7 +489,7 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                                   onError={() => markMessageImageLoaded(fileUrl)}
                                 />
                               </div>
-                            </a>
+                            </button>
                           ) : (
                             <div
                               className={`min-w-[220px] rounded-xl border px-3 py-2.5 ${
@@ -644,6 +665,13 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
           <p className="text-muted-foreground">Select a chat to start messaging</p>
         </div>
       )}
+
+      <Lightbox
+        open={isLightboxOpen}
+        close={() => setIsLightboxOpen(false)}
+        slides={imageSlides}
+        index={lightboxIndex}
+      />
     </section>
   );
 }

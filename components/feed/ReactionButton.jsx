@@ -23,8 +23,12 @@ export default function ReactionButton({ post, showLabel = true }) {
   const { accessToken, userInfo } = useAppContext();
   const queryClient = useQueryClient();
   const [showReactions, setShowReactions] = useState(false);
+  const [optimisticReaction, setOptimisticReaction] = useState(
+    post?.current_user_reaction || null
+  );
+  const [optimisticCount, setOptimisticCount] = useState(post?.reactions_count || 0);
 
-  const currentReaction = post?.current_user_reaction;
+  const currentReaction = optimisticReaction;
   const CurrentIcon = currentReaction
     ? REACTIONS[currentReaction]?.icon
     : Heart;
@@ -34,7 +38,7 @@ export default function ReactionButton({ post, showLabel = true }) {
 
   // React mutation
   const reactMutation = useMutation({
-    mutationFn: async (type) => {
+    mutationFn: async ({ type }) => {
       const formData = new FormData();
       formData.append("type", type);
 
@@ -44,6 +48,11 @@ export default function ReactionButton({ post, showLabel = true }) {
         accessToken
       );
     },
+    onMutate: ({ nextReaction, nextCount }) => {
+      setOptimisticReaction(nextReaction);
+      setOptimisticCount(nextCount);
+      setShowReactions(false);
+    },
     onSuccess: (data) => {
       if (data.status === true) {
         queryClient.invalidateQueries({
@@ -52,27 +61,41 @@ export default function ReactionButton({ post, showLabel = true }) {
         queryClient.invalidateQueries({
           queryKey: [`/feed_management/public/feed/all/post`],
         });
-        setShowReactions(false);
       } else {
         toast.error(data.message);
       }
     },
-    onError: () => {
+    onError: (_error, variables) => {
+      setOptimisticReaction(variables.prevReaction);
+      setOptimisticCount(variables.prevCount);
       toast.error("Failed to react");
     },
   });
 
   const handleReaction = (type) => {
-    // If clicking same reaction, remove it
-    if (currentReaction === type) {
-      reactMutation.mutate(type);
-    } else {
-      reactMutation.mutate(type);
-    }
+    const prevReaction = currentReaction;
+    const prevCount = optimisticCount;
+
+    // Same reaction tap = remove reaction; different = set/switch reaction
+    const nextReaction = prevReaction === type ? null : type;
+    const nextCount =
+      prevReaction === null
+        ? prevCount + 1
+        : nextReaction === null
+          ? Math.max(0, prevCount - 1)
+          : prevCount;
+
+    reactMutation.mutate({
+      type,
+      prevReaction,
+      prevCount,
+      nextReaction,
+      nextCount,
+    });
   };
 
   const getTotalReactions = () => {
-    return post?.reactions_count || 0;
+    return optimisticCount;
   };
 
   return (
@@ -84,6 +107,11 @@ export default function ReactionButton({ post, showLabel = true }) {
               currentReaction ? "font-semibold" : ""
             }`}
             onMouseEnter={() => setShowReactions(true)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleReaction("like");
+            }}
           >
             <CurrentIcon
               size={20}

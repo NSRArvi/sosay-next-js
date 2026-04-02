@@ -16,13 +16,19 @@ import {
 } from "@/components/ui/dialog";
 import Chatpanel from "@/components/message/Chatpanel";
 import UserProfilePost from "@/components/profile/UserProfilePost";
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
 
-function ProfilePicture({ src }) {
+function ProfilePicture({ src, onClick }) {
   const [isLoading, setIsLoading] = useState(Boolean(src));
   const [hasError, setHasError] = useState(false);
 
   return (
-    <div className="size-32 md:size-40 rounded-full border-4 border-white bg-muted overflow-hidden flex items-center justify-center relative">
+    <button
+      type="button"
+      onClick={onClick}
+      className="size-32 md:size-40 rounded-full border-4 border-white bg-muted overflow-hidden flex items-center justify-center relative cursor-pointer"
+    >
       {src && !hasError ? (
         <>
           {isLoading && (
@@ -44,7 +50,7 @@ function ProfilePicture({ src }) {
       ) : (
         <div className="absolute inset-0 rounded-full bg-accent animate-pulse" />
       )}
-    </div>
+    </button>
   );
 }
 
@@ -53,6 +59,8 @@ export default function ProfilePage() {
   const { accessToken } = useAppContext();
   const [openChatDialog, setOpenChatDialog] = useState(false);
   const [receiver, setReceiver] = useState(null);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   
 
   // Fetch profile data
@@ -83,6 +91,19 @@ export default function ProfilePage() {
   });
 
   const profileData = profile?.data;
+  const lightboxSlides = [
+    ...(profileData?.profile_cover_picture
+      ? [{ src: profileData.profile_cover_picture, alt: "Cover Image" }]
+      : []),
+    ...(profileData?.profile_picture
+      ? [{ src: profileData.profile_picture, alt: "Profile Image" }]
+      : []),
+  ];
+
+  const openLightbox = (index) => {
+    setLightboxIndex(index);
+    setIsLightboxOpen(true);
+  };
 
   const handleAddPost = () => {
     const formData = new FormData();
@@ -97,13 +118,19 @@ export default function ProfilePage() {
         {profileDataLoading ? (
           <div className="w-full h-[200px] md:h-[300px] rounded-b-xl bg-accent animate-pulse" />
         ) : profileData?.profile_cover_picture ? (
-          <Image
-            src={profileData.profile_cover_picture}
-            className="w-full h-[200px] md:h-[300px] rounded-b-xl object-cover"
-            alt="Cover Image"
-            height={1000}
-            width={1000}
-          />
+          <button
+            type="button"
+            onClick={() => openLightbox(0)}
+            className="block w-full cursor-pointer"
+          >
+            <Image
+              src={profileData.profile_cover_picture}
+              className="w-full h-[200px] md:h-[300px] rounded-b-xl object-cover"
+              alt="Cover Image"
+              height={1000}
+              width={1000}
+            />
+          </button>
         ) : (
           <div className="w-full h-[200px] md:h-[300px] rounded-b-xl bg-muted flex items-center justify-center text-sm md:text-base font-medium text-muted-foreground">
             No Cover Picture added
@@ -121,6 +148,7 @@ export default function ProfilePage() {
               <ProfilePicture
                 key={profileData?.profile_picture || "profile-picture"}
                 src={profileData?.profile_picture}
+                onClick={() => openLightbox(profileData?.profile_cover_picture ? 1 : 0)}
               />
             )}
           </div>
@@ -160,13 +188,20 @@ export default function ProfilePage() {
 
       {/* Chat Panel Dialog */}
       <Dialog open={openChatDialog} onOpenChange={setOpenChatDialog}>
-        <DialogContent className="p-0">
+        <DialogContent className="p-0 w-screen h-dvh max-w-none rounded-none border-0 lg:w-full lg:h-[80vh] lg:max-w-4xl lg:rounded-lg lg:border">
           <DialogTitle className="sr-only">Chat</DialogTitle>
-          <div className="space-y-6 min-h-[80vh]">
-            <Chatpanel receiver={receiver} />
+          <div className="h-full overflow-hidden">
+            <Chatpanel receiver={receiver} setShowChatPanel={setOpenChatDialog} />
           </div>
         </DialogContent>
       </Dialog>
+
+      <Lightbox
+        open={isLightboxOpen}
+        close={() => setIsLightboxOpen(false)}
+        slides={lightboxSlides}
+        index={lightboxIndex}
+      />
     </section>
   );
 }

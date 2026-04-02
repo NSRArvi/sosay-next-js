@@ -561,10 +561,10 @@ export default function Marketplace() {
 
       {/* Chat Panel Dialog */}
       <Dialog open={openChatDialog} onOpenChange={setOpenChatDialog}>
-        <DialogContent className="p-0">
+        <DialogContent className="p-0 w-screen h-dvh max-w-none rounded-none border-0 lg:w-full lg:h-[80vh] lg:max-w-4xl lg:rounded-lg lg:border">
           <DialogTitle className="sr-only">Chat</DialogTitle>
-          <div className="space-y-6 min-h-[80vh]">
-            <Chatpanel receiver={receiver} />
+          <div className="h-full overflow-hidden">
+            <Chatpanel receiver={receiver} setShowChatPanel={setOpenChatDialog} />
           </div>
         </DialogContent>
       </Dialog>

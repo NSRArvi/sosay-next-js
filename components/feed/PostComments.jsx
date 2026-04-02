@@ -1,6 +1,7 @@
 import { useAppContext } from "@/context/context";
 import { postWithToken } from "@/helpers/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import {
   MessageCircle,
   Send,
@@ -230,20 +231,25 @@ export default function PostComments({ post, allMedia }) {
         key={comment.id}
         className={`flex gap-3 ${isReply ? "ml-6 mt-3" : "mb-4"}`}
       >
-        <Avatar className="h-8 w-8 flex-shrink-0">
-          <AvatarImage src={comment?.user?.profile_image} />
-          <AvatarFallback className="bg-gradient-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
-            {getUserInitials(comment?.user?.name)}
-          </AvatarFallback>
-        </Avatar>
+        <Link href={`/app/profile/${comment?.user?.id}`}>
+          <Avatar className="h-8 w-8 shrink-0 cursor-pointer">
+            <AvatarImage src={comment?.user?.profile_image} />
+            <AvatarFallback className="bg-linear-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
+              {getUserInitials(comment?.user?.name)}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
 
         <div className="flex-1">
           <div className="bg-gray-100 rounded-lg px-3 py-2">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1">
-                <p className="font-semibold text-sm text-gray-900">
+                <Link
+                  href={`/app/profile/${comment?.user?.id}`}
+                  className="font-semibold text-sm text-gray-900 hover:text-secondary transition-colors inline-block"
+                >
                   {comment?.user?.name}
-                </p>
+                </Link>
                 {isEditing ? (
                   <div className="mt-2">
                     <div className="relative">
@@ -326,12 +332,14 @@ export default function PostComments({ post, allMedia }) {
           {/* Reply input */}
           {replyTo === comment.id && (
             <div className="mt-3 flex gap-2">
-              <Avatar className="h-8 w-8 flex-shrink-0">
-                <AvatarImage src={userInfo?.user_image} />
-                <AvatarFallback className="capitalize bg-gradient-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
-                  {getUserInitials(userInfo?.name)}
-                </AvatarFallback>
-              </Avatar>
+              <Link href={`/app/profile/${userInfo?.id}`}>
+                <Avatar className="h-8 w-8 shrink-0 cursor-pointer">
+                  <AvatarImage src={userInfo?.user_image} />
+                  <AvatarFallback className="capitalize bg-linear-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
+                    {getUserInitials(userInfo?.name)}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
               <div className="flex-1 relative">
                 <Textarea
                   value={replyText}
@@ -375,7 +383,7 @@ export default function PostComments({ post, allMedia }) {
   };
 
   return (
-    <div className="max-h-[600px] overflow-y-auto pb-5">
+    <div className="max-h-[calc(100dvh-220px)] sm:max-h-[calc(90dvh-220px)] overflow-y-auto overscroll-contain pb-5 pr-1">
       {/* Post content */}
       <div className="mb-4 pb-4 border-b">
         <PostContent description={post?.description} />
@@ -399,12 +407,14 @@ export default function PostComments({ post, allMedia }) {
 
         {/* Add comment input */}
         <div className="flex gap-3 mb-6">
-          <Avatar className="h-8 w-8 flex-shrink-0">
-            <AvatarImage src={userInfo?.user_image} />
-            <AvatarFallback className="capitalize bg-gradient-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
-              {getUserInitials(userInfo?.name)}
-            </AvatarFallback>
-          </Avatar>
+          <Link href={`/app/profile/${userInfo?.id}`}>
+            <Avatar className="h-8 w-8 shrink-0 cursor-pointer">
+              <AvatarImage src={userInfo?.user_image} />
+              <AvatarFallback className="capitalize bg-linear-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
+                {getUserInitials(userInfo?.name)}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
           <div className="flex-1 relative">
             <Textarea
               value={newComment}

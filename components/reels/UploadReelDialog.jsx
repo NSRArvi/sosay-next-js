@@ -130,7 +130,7 @@ export default function UploadReelDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="w-[95vw] sm:max-w-md max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Upload Reel</DialogTitle>
         </DialogHeader>
@@ -155,11 +155,12 @@ export default function UploadReelDialog({
           {videoPreview && (
             <div>
               <p className="text-sm font-medium text-gray-700 mb-2">Preview</p>
-              <div className="relative rounded-lg overflow-hidden bg-black">
+              <div className="relative w-full max-w-[320px] mx-auto rounded-xl overflow-hidden bg-black border border-gray-800 aspect-3/5">
                 <video
                   src={videoPreview}
                   className="w-full h-full object-cover"
                   controls
+                  playsInline
                 />
                 <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
                   {Math.round(videoDuration)}s
