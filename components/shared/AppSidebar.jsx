@@ -46,10 +46,10 @@ export default function AppSidebar({ isOpen, onClose }) {
     { name: "Friends", icon: Users, href: "/app/friends" },
     { name: "Spump Market", icon: Store, href: "/app/shop" },
     { name: "Reels", icon: Video, href: "/app/reels" },
-    { name: "Pages", icon: Layers, href: "/app/pages" },
-    { name: "Bookmark", icon: Bookmark, href: "/app/bookmark" },
-    { name: "Notifications", icon: Bell, href: "/app/notifications" },
-    { name: "Settings", icon: Settings, href: "/app/settings" },
+    // { name: "Pages", icon: Layers, href: "/app/pages" },
+    // { name: "Bookmark", icon: Bookmark, href: "/app/bookmark" },
+    // { name: "Notifications", icon: Bell, href: "/app/notifications" },
+    // { name: "Settings", icon: Settings, href: "/app/settings" },
   ];
   return (
     <>
@@ -72,7 +72,7 @@ export default function AppSidebar({ isOpen, onClose }) {
         {userInfo && (
           <Link
             href="/app/profile"
-            className="flex items-center gap-3 px-5 py-4 border-y border-gray-200 hover:bg-gray-50 transition-colors flex-shrink-0"
+            className="flex items-center gap-3 px-5 py-4 border-y border-gray-200 hover:bg-gray-50 transition-colors shrink-0"
           >
             <Image
               src={userInfo?.user_image || defaultProfile}
@@ -119,22 +119,19 @@ export default function AppSidebar({ isOpen, onClose }) {
                 </Link>
               );
             })}
+
+            <button
+              onClick={() => {
+                logout();
+                onClose();
+              }}
+              className="mx-2 my-1 flex w-[calc(100%-1rem)] items-center gap-4 rounded-xl border border-red-200 bg-red-50 px-5 py-3 font-medium text-red-600 transition-all hover:bg-red-100"
+            >
+              <LogOut size={22} />
+              <span className="font-medium">Log Out</span>
+            </button>
           </div>
         </nav>
-
-        {/* Log Out button - Fixed at bottom */}
-        <div className="flex-shrink-0 p-2 border-t border-gray-200">
-          <button
-            onClick={() => {
-              logout();
-              onClose();
-            }}
-            className="w-full flex items-center gap-4 px-5 py-3 rounded-xl transition-all hover:bg-red-100 bg-red-50 text-red-600 border border-red-200 font-medium"
-          >
-            <LogOut size={22} />
-            <span className="font-medium">Log Out</span>
-          </button>
-        </div>
       </aside>
     </>
   );

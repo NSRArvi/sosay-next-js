@@ -68,10 +68,10 @@ function DetailContent({
   const images = item.images || [];
 
   return (
-    <div className="flex flex-col sm:flex-row gap-0 overflow-hidden">
+    <div className="flex flex-col md:flex-row gap-0 overflow-hidden">
       {/* Left: Images */}
-      <div className="sm:w-60 shrink-0 bg-gray-50">
-        <div className="relative h-56 sm:h-72 bg-gray-100 overflow-hidden">
+      <div className="bg-gray-50 md:w-2/5 shrink-0">
+        <div className="relative h-52 sm:h-64 md:h-72 bg-gray-100 overflow-hidden">
           {images.length > 0 ? (
             <img
               src={images[activeImage]?.image_path}
@@ -88,7 +88,7 @@ function DetailContent({
 
         {/* Thumbnail strip */}
         {images.length > 1 && (
-          <div className="flex gap-1.5 p-2 flex-wrap">
+          <div className="flex gap-1.5 p-2 flex-wrap md:max-h-44 md:overflow-y-auto">
             {images.map((img, i) => (
               <button
                 key={i}
@@ -112,14 +112,14 @@ function DetailContent({
       </div>
 
       {/* Right: Details */}
-      <div className="flex-1 p-5 overflow-y-auto max-h-[70vh] space-y-4">
+      <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-5 max-h-[65dvh] md:max-h-[75dvh]">
         {/* Title + condition */}
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <h2 className="text-lg font-bold text-gray-800 leading-snug">
             {item.title}
           </h2>
           <Badge
-            className={`capitalize text-xs border shrink-0 mt-0.5 ${conditionStyle}`}
+            className={`capitalize text-xs border shrink-0 w-fit mt-0.5 ${conditionStyle}`}
             variant="outline"
           >
             {conditionLabel}
@@ -201,7 +201,7 @@ export function ProductDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg overflow-hidden rounded-2xl gap-0">
+      <DialogContent className="w-screen h-dvh max-w-none overflow-hidden rounded-none gap-0 p-0 border-0 sm:h-[92dvh] sm:w-[96vw] sm:rounded-2xl sm:border sm:p-0 lg:max-w-4xl">
         <DialogHeader className="sr-only">
           <DialogTitle>Product Details</DialogTitle>
         </DialogHeader>

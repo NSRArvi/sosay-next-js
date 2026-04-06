@@ -112,7 +112,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <section className="max-w-2xl mx-auto space-y-6 px-4 mt-14 md:mt-0">
+    <section className="mx-auto mt-14 max-w-2xl space-y-6 px-3 sm:px-4 md:mt-0">
       {/* Cover Picture */}
       <div className="relative">
         {profileDataLoading ? (
@@ -139,7 +139,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Profile Picture and Info */}
-      <div className="max-w-5xl mx-auto px-5">
+      <div className="mx-auto max-w-5xl px-3 sm:px-5">
         <div className="flex flex-col md:flex-row items-center md:items-end gap-4 -mt-16 md:-mt-20">
           <div className="relative">
             {profileDataLoading ? (
@@ -161,11 +161,12 @@ export default function ProfilePage() {
               )}
             </h1>
 
-            <div className="flex gap-2 mt-2">
+            <div className="mt-2 flex w-full flex-wrap justify-center gap-2 md:w-auto md:justify-start">
               <Button
                 variant="outline"
                 onClick={handleAddPost}
                 disabled={createPostMutation.isPending}
+                className="w-full sm:w-auto"
               >
                 <Plus className="mr-1 h-4 w-4" /> Add Friends
               </Button>
@@ -174,7 +175,7 @@ export default function ProfilePage() {
                   setOpenChatDialog(true);
                   setReceiver(profileData);
                 }}
-                className="bg-secondary hover:bg-secondary/90"
+                className="w-full bg-secondary hover:bg-secondary/90 sm:w-auto"
               >
                 <MessageCircle className="mr-1 h-4 w-4" /> Send Message
               </Button>
@@ -188,7 +189,7 @@ export default function ProfilePage() {
 
       {/* Chat Panel Dialog */}
       <Dialog open={openChatDialog} onOpenChange={setOpenChatDialog}>
-        <DialogContent className="p-0 w-screen h-dvh max-w-none rounded-none border-0 lg:w-full lg:h-[80vh] lg:max-w-4xl lg:rounded-lg lg:border">
+        <DialogContent className="h-dvh w-screen max-w-none rounded-none border-0 p-0 sm:h-[92dvh] sm:w-[96vw] sm:rounded-xl sm:border sm:max-w-4xl">
           <DialogTitle className="sr-only">Chat</DialogTitle>
           <div className="h-full overflow-hidden">
             <Chatpanel receiver={receiver} setShowChatPanel={setOpenChatDialog} />

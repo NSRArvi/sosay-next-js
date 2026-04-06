@@ -43,7 +43,7 @@ function EmojiPicker({ onSelect, onClose, pickerRef }) {
   return (
     <div
       ref={pickerRef}
-      className="absolute bottom-full mb-2 left-0 w-80 bg-card border rounded-xl shadow-lg z-50 flex flex-col"
+      className="absolute bottom-full left-0 z-50 mb-2 flex w-[min(20rem,calc(100vw-2rem))] max-w-full flex-col rounded-xl border bg-card shadow-lg"
       style={{ maxHeight: "360px" }}
     >
       {/* Search */}
@@ -409,9 +409,9 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
   return (
     <section className="w-full h-full">
       {receiver ? (
-        <div className="flex flex-col h-full lg:h-[calc(100dvh-90px)] bg-card shadow-sm lg:rounded-xl">
+        <div className="flex h-full flex-col bg-card shadow-sm sm:rounded-xl lg:h-[calc(100dvh-90px)]">
           {/* Chat Header */}
-          <div className="border-b px-4 py-3 flex items-center gap-3 bg-card lg:rounded-t-xl">
+          <div className="border-b bg-card px-3 py-3 sm:px-4 flex items-center gap-3 sm:rounded-t-xl">
             <button className="lg:hidden" onClick={() => setShowChatPanel(false)}>
               <ArrowLeft className="text-gray-400" />
             </button>
@@ -421,8 +421,8 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                 {getInitials(receiver?.name || "")}
               </AvatarFallback>
             </Avatar>
-            <div>
-              <h2 className="font-semibold text-lg">{receiver?.name}</h2>
+            <div className="min-w-0 flex-1">
+              <h2 className="truncate font-semibold text-base sm:text-lg">{receiver?.name}</h2>
               <p className="text-xs text-muted-foreground">
                 {receiver?.is_online ? (
                   "Active now"
@@ -436,7 +436,7 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
           </div>
 
           {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4">
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
                 <p className="text-muted-foreground">Loading messages...</p>
@@ -458,7 +458,7 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                       className={`flex ${isSender ? "justify-end" : "justify-start"}`}
                     >
                       <div
-                        className={`max-w-[70%] rounded-2xl ${
+                        className={`max-w-[85%] sm:max-w-[75%] lg:max-w-[70%] rounded-2xl ${
                           isImageMessage
                             ? "bg-transparent p-0"
                             : isSender
@@ -474,7 +474,7 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                               className="block"
                               aria-label="Open image preview"
                             >
-                              <div className="relative h-72 w-full min-w-[220px] rounded-lg overflow-hidden bg-transparent border border-border/50">
+                              <div className="relative h-52 sm:h-64 md:h-72 w-full min-w-[180px] sm:min-w-[220px] rounded-lg overflow-hidden bg-transparent border border-border/50">
                                 {!loadedMessageImages[fileUrl] && (
                                   <div className="absolute inset-0 animate-pulse bg-muted/60" />
                                 )}
@@ -492,7 +492,7 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                             </button>
                           ) : (
                             <div
-                              className={`min-w-[220px] rounded-xl border px-3 py-2.5 ${
+                              className={`min-w-[170px] sm:min-w-[220px] rounded-xl border px-3 py-2.5 ${
                                 isSender
                                   ? "bg-secondary/90 border-white/35"
                                   : "bg-background border-border/80"
@@ -548,13 +548,13 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
           </div>
 
           {/* Message Input */}
-          <div className="border-t p-4 bg-card lg:rounded-b-xl">
+          <div className="border-t bg-card p-3 sm:p-4 sm:rounded-b-xl">
             {/* File Preview */}
             {selectedFile && (
               <div className="mb-2 p-2 bg-muted rounded-lg">
                 {selectedImagePreview ? (
                   <div className="space-y-2">
-                    <div className="relative h-72 w-full bg-transparent rounded-lg overflow-hidden border border-border/50">
+                    <div className="relative h-52 sm:h-64 md:h-72 w-full bg-transparent rounded-lg overflow-hidden border border-border/50">
                       {isSelectedPreviewLoading && (
                         <div className="absolute inset-0 animate-pulse bg-muted/60" />
                       )}
@@ -570,7 +570,7 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                       />
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm truncate max-w-[220px]">{selectedFile.name}</span>
+                      <span className="max-w-[58vw] sm:max-w-[220px] text-sm truncate">{selectedFile.name}</span>
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={removeSelectedFile}>
                         <X className="h-4 w-4" />
                       </Button>
@@ -580,7 +580,7 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Paperclip className="h-4 w-4" />
-                      <span className="text-sm truncate max-w-[200px]">{selectedFile.name}</span>
+                      <span className="max-w-[48vw] sm:max-w-[200px] text-sm truncate">{selectedFile.name}</span>
                       <span className="text-xs text-muted-foreground">
                         ({(selectedFile.size / 1024).toFixed(2)} KB)
                       </span>
@@ -593,7 +593,7 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
               </div>
             )}
 
-            <div className="flex gap-2 relative">
+            <div className="relative flex items-center gap-2">
               {/* Emoji Picker Popup */}
               {showEmojiPicker && (
                 <EmojiPicker
@@ -616,6 +616,7 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                 size="icon"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isSending}
+                className="shrink-0"
               >
                 <Paperclip className="h-4 w-4" />
               </Button>
@@ -627,7 +628,7 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                 size="icon"
                 onClick={() => setShowEmojiPicker((prev) => !prev)}
                 disabled={isSending}
-                className={showEmojiPicker ? "bg-muted" : ""}
+                className={`shrink-0 ${showEmojiPicker ? "bg-muted" : ""}`}
               >
                 <Smile className="h-4 w-4" />
               </Button>
@@ -649,7 +650,7 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                 onClick={sendMessage}
                 size="icon"
                 disabled={(!message.trim() && !selectedFile) || isSending}
-                className="bg-secondary"
+                className="bg-secondary shrink-0"
               >
                 {isSending ? (
                   <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />

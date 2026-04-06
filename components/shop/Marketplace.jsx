@@ -48,7 +48,7 @@ function Pagination({ meta, page, onPageChange }) {
   if (!meta || meta.last_page <= 1) return null;
   const pages = Array.from({ length: meta.last_page }, (_, i) => i + 1);
   return (
-    <div className="flex items-center justify-center gap-1 mt-8">
+    <div className="mt-8 flex flex-wrap items-center justify-center gap-1">
       <button
         onClick={() => onPageChange(page - 1)}
         disabled={!meta.prev_page_url}
@@ -385,7 +385,7 @@ export default function Marketplace() {
   return (
     <section className="min-h-screen bg-gray-50 pb-16">
       {/* Top bar */}
-      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3 sticky top-0 z-50 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-xl">
+      <div className="mx-auto flex w-full max-w-5xl items-center gap-3 rounded-xl border border-gray-200 bg-white/90 px-3 py-3 backdrop-blur-sm sm:px-4 sticky top-0 z-50">
         {/* Search input */}
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -412,7 +412,7 @@ export default function Marketplace() {
           <SheetTrigger asChild>
             <button
               type="button"
-              className="relative flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-gray-200 text-sm text-gray-600 hover:border-secondary hover:text-secondary transition flex-shrink-0"
+              className="relative flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-gray-200 text-sm text-gray-600 hover:border-secondary hover:text-secondary transition shrink-0"
             >
               <SlidersHorizontal className="h-4 w-4" />
               <span className="hidden sm:inline">Filters</span>
@@ -445,9 +445,9 @@ export default function Marketplace() {
         </Sheet>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 mt-6">
+      <div className="mx-auto mt-6 w-full max-w-5xl px-3 sm:px-4">
         {/* Header row */}
-        <div className="mb-4 flex items-start justify-between">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-800">Marketplace</h1>
             {!isLoading && paginatedData && (
@@ -468,7 +468,7 @@ export default function Marketplace() {
           </div>
 
           {/* Sort shortcut (mirrors sheet but quick access) */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
             <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
             <select
               value={filters.sort_by_price}
@@ -489,7 +489,7 @@ export default function Marketplace() {
 
         {/* Listings grid */}
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <ListingCardSkeleton key={i} />
             ))}
@@ -516,7 +516,7 @@ export default function Marketplace() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {listings.map((item) => (
                 <ListingCard
                   key={item.id}
@@ -561,7 +561,7 @@ export default function Marketplace() {
 
       {/* Chat Panel Dialog */}
       <Dialog open={openChatDialog} onOpenChange={setOpenChatDialog}>
-        <DialogContent className="p-0 w-screen h-dvh max-w-none rounded-none border-0 lg:w-full lg:h-[80vh] lg:max-w-4xl lg:rounded-lg lg:border">
+        <DialogContent className="h-dvh w-screen max-w-none rounded-none border-0 p-0 sm:h-[92dvh] sm:w-[96vw] sm:rounded-xl sm:border sm:max-w-4xl">
           <DialogTitle className="sr-only">Chat</DialogTitle>
           <div className="h-full overflow-hidden">
             <Chatpanel receiver={receiver} setShowChatPanel={setOpenChatDialog} />

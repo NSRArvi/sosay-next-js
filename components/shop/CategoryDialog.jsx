@@ -24,11 +24,11 @@ export default function CategoryDialog({
         </DialogHeader>
 
         {categoriesLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
             {Array.from({ length: 10 }).map((_, idx) => (
               <div
                 key={idx}
-                className="overflow-hidden rounded-2xl shadow-md"
+                className="overflow-hidden rounded shadow-md"
               >
                 <div className="relative aspect-3/5 w-full overflow-hidden bg-gray-100 animate-pulse">
                   <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
@@ -44,13 +44,13 @@ export default function CategoryDialog({
             No categories available right now.
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
             {categories.map((category) => (
               <button
                 key={category.id}
                 type="button"
                 onClick={() => onSelect(category.id)}
-                className="group overflow-hidden rounded-2xl text-left shadow-md transition duration-300 hover:-translate-y-0.5 hover:shadow-xl"
+                className="group overflow-hidden rounded text-left shadow-md transition duration-300 hover:-translate-y-0.5 hover:shadow-xl"
               >
                 <div className="relative aspect-3/5 w-full overflow-hidden bg-gray-100">
                   <Image
