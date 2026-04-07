@@ -388,7 +388,7 @@ export default function Marketplace() {
       <div className="mx-auto flex w-full max-w-5xl items-center gap-3 rounded-xl border border-gray-200 bg-white/90 px-3 py-3 backdrop-blur-sm sm:px-4 sticky top-0 z-50">
         {/* Search input */}
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          <Search className="absolute z-0 left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
           <input
             type="text"
             placeholder="Search listings..."

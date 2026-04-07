@@ -56,14 +56,14 @@ export default function AppSidebar({ isOpen, onClose }) {
       {/* Overlay for mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-50 md:hidden"
+          className="fixed inset-0 bg-black/50 z-99 md:z-50 md:hidden"
           onClick={onClose}
         />
       )}
       {/* isMessageRoute ? "top-0 lg:top-14" : "top-14", */}
       <aside
         className={clsx(
-          "fixed h-screen w-64 bg-white text-gray-800 z-50 flex flex-col transition-transform duration-300",
+          "fixed h-screen w-64 bg-white text-gray-800 z-99 md:z-50 flex flex-col transition-transform duration-300",
           isOpen ? "translate-x-0 top-0" : "-translate-x-full top-14",
           "md:translate-x-0 md:top-14 md:h-[calc(100vh-3.5rem)]",
         )}

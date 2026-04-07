@@ -3,6 +3,7 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { AppProvider } from "@/context/context";
 import QueryProvider from "@/providers/QueryProvider";
+import CreateButtons from "@/components/shared/CreateButtons";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
         <QueryProvider>
           <AppProvider>{children}</AppProvider>
           <Toaster />
+          <CreateButtons/>
         </QueryProvider>
       </body>
     </html>
