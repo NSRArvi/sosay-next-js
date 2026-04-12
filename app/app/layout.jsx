@@ -3,8 +3,9 @@ import { useState } from "react";
 import AppSidebar from "@/components/shared/AppSidebar";
 import BottomBar from "@/components/shared/BottomBar";
 import TopBar from "@/components/shared/TopBar";
-import SuggestionList from "@/components/feed/SuggestionList";
+// import SuggestionList from "@/components/feed/SuggestionList";
 import PrivateRoute from "@/components/private/PrivateRoute";
+import CreateButtons from "@/components/shared/CreateButtons";
 
 export default function Layout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -25,6 +26,7 @@ export default function Layout({ children }) {
         </div> */}
       </div>
       <BottomBar onUserClick={() => setIsSidebarOpen((v) => !v)} />
+      <CreateButtons />
     </PrivateRoute>
   );
 }

@@ -1,13 +1,11 @@
-"use client";
-
 import Image from "next/image";
-// import { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import ShopHeader from "./ShopHeader";
 
 export default function CategoryDialog({
   open,
@@ -17,12 +15,12 @@ export default function CategoryDialog({
   onSelect,
   title = "Choose a Category",
 }) {
-  // const [previewCategory, setPreviewCategory] = useState(null);
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] md:max-w-5xl max-h-[92vh] overflow-y-auto">
           <DialogHeader>
+            <ShopHeader/>
             <DialogTitle>{title}</DialogTitle>
           </DialogHeader>
 
@@ -70,48 +68,12 @@ export default function CategoryDialog({
                       </span>
                     </div>
                   </button>
-
-                  {/* <button
-                    type="button"
-                    onClick={() => setPreviewCategory(category)}
-                    className="absolute bottom-2 right-2 rounded bg-black/80 px-3 py-1 text-xs font-medium text-white hover:bg-black"
-                  >
-                    Full View
-                  </button> */}
                 </div>
               ))}
             </div>
           )}
         </DialogContent>
       </Dialog>
-
-      {/* <Dialog
-        open={!!previewCategory}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) setPreviewCategory(null);
-        }}
-      >
-        <DialogContent className="w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] md:max-w-5xl border-2 border-black p-0 overflow-hidden">
-          <DialogHeader className="p-4 pb-0">
-            <DialogTitle className="text-center">
-              {previewCategory?.name || "Category Preview"}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="p-4 pt-3">
-            {previewCategory?.icon ? (
-              <div className="relative aspect-video w-full overflow-hidden rounded border border-black bg-gray-100">
-                <Image
-                  src={previewCategory.icon}
-                  alt={previewCategory.name}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            ) : null}
-          </div>
-        </DialogContent>
-      </Dialog> */}
     </>
   );
 }
