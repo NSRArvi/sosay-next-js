@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchWithToken } from "@/helpers/api";
 import { useAppContext } from "@/context/context";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Tag,
@@ -27,10 +28,7 @@ import {
   ListingCard,
   ListingCardSkeleton,
 } from "@/components/shop/Listingcard";
-import { ProductDetailDialog } from "@/components/shop/Productdetaildialog";
 import CategoryDialog from "@/components/shop/CategoryDialog";
-import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
-import Chatpanel from "../message/Chatpanel";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
 
@@ -289,10 +287,10 @@ function ActiveFilterBadges({ filters, categories, onRemove }) {
 
 export default function Marketplace() {
   const { accessToken } = useAppContext();
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [selectedItemId, setSelectedItemId] = useState(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(() => {
     if (hasShownInitialCategoryDialog) return false;
@@ -300,8 +298,6 @@ export default function Marketplace() {
     return true;
   });
   const debounceRef = useRef(null);
-  const [openChatDialog, setOpenChatDialog] = useState(false);
-  const [receiver, setReceiver] = useState(null);
 
   const EMPTY_FILTERS = {
     category_id: "",
@@ -521,7 +517,7 @@ export default function Marketplace() {
                 <ListingCard
                   key={item.id}
                   item={item}
-                  onSelect={(id) => setSelectedItemId(id)}
+                  onSelect={(id) => router.push(`/app/shop/${id}`)}
                 />
               ))}
             </div>
@@ -542,15 +538,6 @@ export default function Marketplace() {
         )}
       </div>
 
-      <ProductDetailDialog
-        itemId={selectedItemId}
-        open={!!selectedItemId}
-        onClose={() => setSelectedItemId(null)}
-        accessToken={accessToken}
-        setOpenChatDialog={setOpenChatDialog}
-        setReceiver={setReceiver}
-      />
-
       <CategoryDialog
         open={categoryPickerOpen}
         onOpenChange={setCategoryPickerOpen}
@@ -558,16 +545,6 @@ export default function Marketplace() {
         categories={categories}
         onSelect={handleInitialCategorySelect}
       />
-
-      {/* Chat Panel Dialog */}
-      <Dialog open={openChatDialog} onOpenChange={setOpenChatDialog}>
-        <DialogContent className="h-dvh w-screen max-w-none rounded-none border-0 p-0 sm:h-[92dvh] sm:w-[96vw] sm:rounded-xl sm:border sm:max-w-4xl">
-          <DialogTitle className="sr-only">Chat</DialogTitle>
-          <div className="h-full overflow-hidden">
-            <Chatpanel receiver={receiver} setShowChatPanel={setOpenChatDialog} />
-          </div>
-        </DialogContent>
-      </Dialog>
     </section>
   );
 }

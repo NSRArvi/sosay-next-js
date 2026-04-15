@@ -19,14 +19,13 @@ const CONDITION_OPTIONS = [
   { value: "used_like_new", label: "Like New" },
   { value: "used_good", label: "Good" },
   { value: "used_fair", label: "Fair" },
-  { value: "used_poor", label: "Poor" },
 ];
 
 const INITIAL_FORM = {
   title: "",
   description: "",
   price: "",
-  currency: "BDT",
+  currency: "USD",
   condition: "used_good",
   location: "",
   category_id: "",
@@ -37,6 +36,7 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
   const [form, setForm] = useState(INITIAL_FORM);
   const [images, setImages] = useState([]);
   const [previews, setPreviews] = useState([]);
+  const [thumbnailIndex, setThumbnailIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -65,18 +65,27 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
     const merged = [...images, ...files].slice(0, 5);
     setImages(merged);
     setPreviews(merged.map((f) => URL.createObjectURL(f)));
+    if (merged.length > 0 && thumbnailIndex >= merged.length) {
+      setThumbnailIndex(0);
+    }
   };
 
   const removeImage = (index) => {
     const imgs = images.filter((_, i) => i !== index);
     setImages(imgs);
     setPreviews(imgs.map((f) => URL.createObjectURL(f)));
+    if (imgs.length === 0) {
+      setThumbnailIndex(0);
+    } else if (thumbnailIndex >= imgs.length) {
+      setThumbnailIndex(0);
+    }
   };
 
   const resetAndClose = () => {
     setForm(INITIAL_FORM);
     setImages([]);
     setPreviews([]);
+    setThumbnailIndex(0);
     setError(null);
     setSuccess(false);
     onClose();
@@ -88,14 +97,26 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
     setIsSubmitting(true);
 
     try {
+      if (!form.category_id) {
+        throw new Error("Category is required.");
+      }
+
+      if (!form.location?.trim()) {
+        throw new Error("Location is required.");
+      }
+
       const formData = new FormData();
       formData.append("title", form.title);
       formData.append("price", form.price);
-      formData.append("category_id", form.category_id || "1");
+      formData.append("currency", form.currency);
+      formData.append("category_id", form.category_id);
       formData.append("condition", form.condition);
-      formData.append("location", form.location);
+      formData.append("location", form.location.trim());
       if (form.description) formData.append("description", form.description);
       images.forEach((img, i) => formData.append(`images[${i}]`, img));
+      if (images[thumbnailIndex]) {
+        formData.append("thumbnail_image", images[thumbnailIndex]);
+      }
 
       const res = await fetch(`${BASE_URL}/marketplace/listings`, {
         method: "POST",
@@ -193,10 +214,8 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
                   onChange={handleChange}
                   className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 bg-white transition"
                 >
-                  <option value="BDT">BDT</option>
                   <option value="USD">USD</option>
                   <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
                 </select>
               </div>
               <div className="space-y-1 flex-1">
@@ -249,6 +268,7 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
                   name="location"
                   value={form.location}
                   onChange={handleChange}
+                  required
                   placeholder="e.g. Dhaka, BD"
                   className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 focus:ring-1 focus:ring-secondary/20 transition"
                 />
@@ -292,6 +312,13 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
                     className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200"
                   >
                     <img src={src} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setThumbnailIndex(i)}
+                      className={`absolute bottom-0 left-0 right-0 text-[8px] text-white py-0.5 ${thumbnailIndex === i ? "bg-secondary/90" : "bg-black/50"}`}
+                    >
+                      {thumbnailIndex === i ? "Thumbnail" : "Set Thumbnail"}
+                    </button>
                     <button
                       type="button"
                       onClick={() => removeImage(i)}

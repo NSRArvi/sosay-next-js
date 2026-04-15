@@ -33,16 +33,11 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   ListingCard,
   ListingCardSkeleton,
 } from "@/components/shop/Listingcard";
 import CategoryDialog from "@/components/shop/CategoryDialog";
+import ShopSidebar from "./ShopSidebar";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
 
@@ -101,7 +96,14 @@ function Pagination({ meta, page, onPageChange }) {
 
 // ─── Filter Panel ──────────────────────────────────────────────────────────────
 
-function FilterPanel({ filters, setFilters, categories, categoriesLoading, onApply, onReset }) {
+function FilterPanel({
+  filters,
+  setFilters,
+  categories,
+  categoriesLoading,
+  onApply,
+  onReset,
+}) {
   const [local, setLocal] = useState(filters);
 
   React.useEffect(() => {
@@ -114,7 +116,12 @@ function FilterPanel({ filters, setFilters, categories, categoriesLoading, onApp
   };
 
   const handleReset = () => {
-    const empty = { category_id: "", min_price: "", max_price: "", sort_by_price: "" };
+    const empty = {
+      category_id: "",
+      min_price: "",
+      max_price: "",
+      sort_by_price: "",
+    };
     setLocal(empty);
     setFilters(empty);
     onReset?.();
@@ -146,7 +153,9 @@ function FilterPanel({ filters, setFilters, categories, categoriesLoading, onApp
               <button
                 key={cat.id}
                 type="button"
-                onClick={() => setLocal((p) => ({ ...p, category_id: String(cat.id) }))}
+                onClick={() =>
+                  setLocal((p) => ({ ...p, category_id: String(cat.id) }))
+                }
                 className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${
                   local.category_id === String(cat.id)
                     ? "bg-secondary text-white border-secondary"
@@ -174,7 +183,9 @@ function FilterPanel({ filters, setFilters, categories, categoriesLoading, onApp
               type="number"
               min="0"
               value={local.min_price}
-              onChange={(e) => setLocal((p) => ({ ...p, min_price: e.target.value }))}
+              onChange={(e) =>
+                setLocal((p) => ({ ...p, min_price: e.target.value }))
+              }
               placeholder="0"
               className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 focus:ring-1 focus:ring-secondary/20 transition"
             />
@@ -188,7 +199,9 @@ function FilterPanel({ filters, setFilters, categories, categoriesLoading, onApp
               type="number"
               min="0"
               value={local.max_price}
-              onChange={(e) => setLocal((p) => ({ ...p, max_price: e.target.value }))}
+              onChange={(e) =>
+                setLocal((p) => ({ ...p, max_price: e.target.value }))
+              }
               placeholder="∞"
               className="w-full pl-10 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 focus:ring-1 focus:ring-secondary/20 transition"
             />
@@ -206,7 +219,9 @@ function FilterPanel({ filters, setFilters, categories, categoriesLoading, onApp
             <button
               key={opt.value}
               type="button"
-              onClick={() => setLocal((p) => ({ ...p, sort_by_price: opt.value }))}
+              onClick={() =>
+                setLocal((p) => ({ ...p, sort_by_price: opt.value }))
+              }
               className={`flex-1 py-2 text-xs rounded-lg border font-medium transition ${
                 local.sort_by_price === opt.value
                   ? "bg-secondary text-white border-secondary"
@@ -250,8 +265,10 @@ function ActiveFilterBadges({ filters, categories, onRemove }) {
     const cat = categories.find((c) => String(c.id) === filters.category_id);
     if (cat) badges.push({ key: "category_id", label: cat.name });
   }
-  if (filters.min_price) badges.push({ key: "min_price", label: `Min: ${filters.min_price}` });
-  if (filters.max_price) badges.push({ key: "max_price", label: `Max: ${filters.max_price}` });
+  if (filters.min_price)
+    badges.push({ key: "min_price", label: `Min: ${filters.min_price}` });
+  if (filters.max_price)
+    badges.push({ key: "max_price", label: `Max: ${filters.max_price}` });
   if (filters.sort_by_price) {
     const sort = SORT_OPTIONS.find((s) => s.value === filters.sort_by_price);
     if (sort) badges.push({ key: "sort_by_price", label: sort.label });
@@ -281,155 +298,6 @@ function ActiveFilterBadges({ filters, categories, onRemove }) {
   );
 }
 
-// ─── Public Detail Dialog ──────────────────────────────────────────────────────
-
-function PublicDetailDialog({ itemId, open, onClose }) {
-  const router = useRouter();
-  const [activeImage, setActiveImage] = useState(0);
-
-  const { data, isLoading } = useQuery({
-    queryKey: [`${BASE_URL}/marketplace/public/listings/${itemId}`],
-    queryFn: () => fetchPublic(`/marketplace/public/listings/${itemId}`),
-    enabled: !!itemId && open,
-  });
-
-  const item = data?.data;
-  const images = item?.images || [];
-
-  const CONDITION_LABELS = {
-    new: "New",
-    used_like_new: "Like New",
-    used_good: "Good",
-    used_fair: "Fair",
-    used_poor: "Poor",
-  };
-
-  const CONDITION_STYLES = {
-    new: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    used_like_new: "bg-blue-50 text-blue-700 border-blue-200",
-    used_good: "bg-amber-50 text-amber-700 border-amber-200",
-    used_fair: "bg-orange-50 text-orange-700 border-orange-200",
-    used_poor: "bg-red-50 text-red-700 border-red-200",
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between pr-6">
-            <span>Product Details</span>
-          </DialogTitle>
-        </DialogHeader>
-
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Package className="h-8 w-8 animate-spin text-secondary" />
-          </div>
-        ) : !item ? (
-          <div className="flex flex-col items-center justify-center h-64 text-center">
-            <Package className="h-10 w-10 text-gray-200 mb-3" />
-            <p className="text-gray-400 font-medium">Product not found</p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-6">
-            {/* Images */}
-            <div className="space-y-3">
-              <div className="relative h-80 bg-gray-100 rounded-lg overflow-hidden">
-                {images.length > 0 ? (
-                  <img
-                    src={images[activeImage]?.image_path}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-300">
-                    <Package className="h-16 w-16 mb-2" />
-                    <span className="text-sm">No images</span>
-                  </div>
-                )}
-              </div>
-
-              {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {images.map((img, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveImage(i)}
-                      className={`w-16 h-16 rounded-md overflow-hidden border-2 transition-all flex-shrink-0 ${
-                        i === activeImage
-                          ? "border-secondary"
-                          : "border-transparent opacity-60 hover:opacity-100"
-                      }`}
-                    >
-                      <img
-                        src={img.image_path}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Content */}
-            <div className="space-y-4">
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="text-2xl font-bold text-gray-800">{item.title}</h2>
-                <Badge
-                  className={`capitalize text-xs border ${CONDITION_STYLES[item.condition] || CONDITION_STYLES.used_good}`}
-                  variant="outline"
-                >
-                  {CONDITION_LABELS[item.condition] || item.condition}
-                </Badge>
-              </div>
-
-              <p className="text-3xl font-extrabold text-secondary">
-                {item.currency} {parseFloat(item.price).toLocaleString()}
-              </p>
-
-              {item.description && (
-                <p className="text-gray-600 leading-relaxed whitespace-pre-line text-sm">
-                  {item.description}
-                </p>
-              )}
-
-              <div className="space-y-2 pt-2 border-t">
-                {item.location && (
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium text-gray-700">Location:</span> {item.location}
-                  </p>
-                )}
-                {item.category && (
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium text-gray-700">Category:</span> {item.category}
-                  </p>
-                )}
-              </div>
-
-              {/* Login CTA */}
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-gray-700 mb-3">
-                  Want to contact the seller or list your own items? Sign in to your account.
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => router.push("/register")}
-                    className="flex-1 bg-secondary hover:bg-secondary/90"
-                  >
-                    <LogIn className="h-4 w-4 mr-2" />
-                    Sign In / Register
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 // ─── Public Marketplace ────────────────────────────────────────────────────────
 
 export default function PublicMarketplace() {
@@ -437,7 +305,6 @@ export default function PublicMarketplace() {
   const [search, setSearch] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [selectedItemId, setSelectedItemId] = useState(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [showListingAuthDialog, setShowListingAuthDialog] = useState(false);
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(() => {
@@ -447,7 +314,12 @@ export default function PublicMarketplace() {
   });
   const debounceRef = useRef(null);
 
-  const EMPTY_FILTERS = { category_id: "", min_price: "", max_price: "", sort_by_price: "" };
+  const EMPTY_FILTERS = {
+    category_id: "",
+    min_price: "",
+    max_price: "",
+    sort_by_price: "",
+  };
   const [filters, setFilters] = useState(EMPTY_FILTERS);
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
@@ -517,7 +389,7 @@ export default function PublicMarketplace() {
   };
 
   return (
-    <section className="min-h-screen pb-16">
+    <section className="min-h-screen pb-16 relative">
       {/* Marketplace nav */}
       <div className="max-w-5xl mx-auto mb-4">
         <div className="inline-flex items-center rounded-full border border-gray-200 bg-white p-1">
@@ -565,7 +437,7 @@ export default function PublicMarketplace() {
           <SheetTrigger asChild>
             <button
               type="button"
-              className="relative flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-gray-200 text-sm text-gray-600 hover:border-secondary hover:text-secondary transition flex-shrink-0"
+              className="relative flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-gray-200 text-sm text-gray-600 hover:border-secondary hover:text-secondary transition shrink-0"
             >
               <SlidersHorizontal className="h-4 w-4" />
               <span className="hidden sm:inline">Filters</span>
@@ -602,7 +474,9 @@ export default function PublicMarketplace() {
         {/* Header row */}
         <div className="mb-4 flex items-start justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-800">Spump Marketplace</h1>
+            <h1 className="text-xl font-bold text-gray-800">
+              Spump Marketplace
+            </h1>
             {!isLoading && paginatedData && (
               <p className="text-sm text-muted-foreground mt-0.5">
                 {activeSearch
@@ -621,7 +495,7 @@ export default function PublicMarketplace() {
           </div>
 
           {/* Sort shortcut */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
             <select
               value={filters.sort_by_price}
@@ -674,7 +548,7 @@ export default function PublicMarketplace() {
                 <ListingCard
                   key={item.id}
                   item={item}
-                  onSelect={(id) => setSelectedItemId(id)}
+                  onSelect={(id) => router.push(`/shop/${id}`)}
                 />
               ))}
             </div>
@@ -695,18 +569,16 @@ export default function PublicMarketplace() {
         )}
       </div>
 
-      <PublicDetailDialog
-        itemId={selectedItemId}
-        open={!!selectedItemId}
-        onClose={() => setSelectedItemId(null)}
-      />
-
-      <AlertDialog open={showListingAuthDialog} onOpenChange={setShowListingAuthDialog}>
+      <AlertDialog
+        open={showListingAuthDialog}
+        onOpenChange={setShowListingAuthDialog}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Login Required</AlertDialogTitle>
             <AlertDialogDescription>
-              You need an account to access My Listing and add products. Please login or register to continue.
+              You need an account to access My Listing and add products. Please
+              login or register to continue.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -734,6 +606,10 @@ export default function PublicMarketplace() {
         categories={categories}
         onSelect={handleInitialCategorySelect}
       />
+
+      {/* <div className="absolute top-0 -right-0 hidden lg:block">
+        <ShopSidebar />
+      </div> */}
     </section>
   );
 }
