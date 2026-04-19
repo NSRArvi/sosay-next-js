@@ -8,7 +8,7 @@ export default function ShopHeader() {
   return (
     <div className="mb-8">
       <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="flex gap-4 items-start">
+        <div className="flex flex-col md:flex-row gap-4 items-center md:items-start">
           <Image
             src="/images/logo/scotty.webp"
             alt="Sosay"
@@ -30,7 +30,7 @@ export default function ShopHeader() {
               <strong style={{ color: "#F97316" }}>SPUMP</strong>{" "}
               and unlock more selling power with unlimited free ads.
             </p>
-            <div className="flex gap-3 mt-4">
+            <div className="flex gap-3 justify-center md:justify-start mt-4">
               {!accessToken && (
                 <a
                   href="https://sosay.org"
