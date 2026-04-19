@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MapPin, Package, ChevronRight } from "lucide-react";
+import { MapPin, Package, ChevronRight, Globe } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
@@ -78,6 +78,13 @@ export function ListingCard({ item, onSelect }) {
           <div className="flex items-center gap-1 text-xs text-gray-400">
             <MapPin className="h-3 w-3 flex-shrink-0" />
             <span className="truncate">{item.location}</span>
+          </div>
+        )}
+
+        {item.country && (
+          <div className="flex items-center gap-1 text-xs text-gray-400">
+            <Globe className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">{item.country.name}</span>
           </div>
         )}
 

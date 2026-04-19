@@ -16,6 +16,19 @@ export const AppProvider = ({ children }) => {
   const [isUserVerified, setIsUserVerified] = useState(false);
   const [verificationInfo, setVerificationInfo] = useState(null);
 
+  const { data: countriesData, isLoading: countriesLoading } = useQuery({
+    queryKey: ["/countries"],
+    queryFn: async () => {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_DEV_URL || ""}/countries`
+      );
+      return response.json();
+    },
+    staleTime: 1000 * 60 * 30,
+  });
+
+  const countries = countriesData?.data || [];
+
   // Check user is verified
   const { data } = useQuery({
     queryKey: ["/user/is-verified", accessToken],
@@ -72,6 +85,8 @@ export const AppProvider = ({ children }) => {
         accessToken,
         isUserVerified,
         verificationInfo,
+        countries,
+        countriesLoading,
         setUserInfo: updateUserInfo,
         setAccessToken: updateAccessToken,
         logout,

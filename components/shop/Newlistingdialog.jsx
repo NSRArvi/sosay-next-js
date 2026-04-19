@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
@@ -27,12 +28,13 @@ const INITIAL_FORM = {
   price: "",
   currency: "USD",
   condition: "used_good",
+  country_id: "",
   location: "",
   category_id: "",
 };
 
 export function NewListingDialog({ open, onClose, onSuccess }) {
-  const { accessToken } = useAppContext();
+  const { accessToken, countries, countriesLoading } = useAppContext();
   const [form, setForm] = useState(INITIAL_FORM);
   const [images, setImages] = useState([]);
   const [previews, setPreviews] = useState([]);
@@ -105,12 +107,17 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
         throw new Error("Location is required.");
       }
 
+      if (!form.country_id) {
+        throw new Error("Country is required.");
+      }
+
       const formData = new FormData();
       formData.append("title", form.title);
       formData.append("price", form.price);
       formData.append("currency", form.currency);
       formData.append("category_id", form.category_id);
       formData.append("condition", form.condition);
+      formData.append("country_id", form.country_id);
       formData.append("location", form.location.trim());
       if (form.description) formData.append("description", form.description);
       images.forEach((img, i) => formData.append(`images[${i}]`, img));
@@ -259,8 +266,8 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
               </div>
             </div>
 
-            {/* Location + Category */}
-            <div className="flex gap-2">
+            {/* Location + Country + Category */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <div className="space-y-1 flex-1">
                 <label className="text-xs font-medium text-gray-600">Location</label>
                 <input
@@ -272,6 +279,31 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
                   placeholder="e.g. Dhaka, BD"
                   className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 focus:ring-1 focus:ring-secondary/20 transition"
                 />
+              </div>
+              <div className="space-y-1 flex-1">
+                <label className="text-xs font-medium text-gray-600">
+                  Country <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <select
+                    name="country_id"
+                    value={form.country_id}
+                    onChange={handleChange}
+                    required
+                    disabled={countriesLoading}
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 focus:ring-1 focus:ring-secondary/20 bg-white appearance-none transition disabled:opacity-60"
+                  >
+                    <option value="" disabled>
+                      {countriesLoading ? "Loading..." : "Select country"}
+                    </option>
+                    {countries.map((country) => (
+                      <option key={country.id} value={String(country.id)}>
+                        {country.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+                </div>
               </div>
               <div className="space-y-1 flex-1">
                 <label className="text-xs font-medium text-gray-600">
@@ -311,7 +343,7 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
                     key={i}
                     className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200"
                   >
-                    <img src={src} alt="" className="w-full h-full object-cover" />
+                    <Image src={src} alt="" fill unoptimized className="object-cover" />
                     <button
                       type="button"
                       onClick={() => setThumbnailIndex(i)}

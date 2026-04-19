@@ -198,14 +198,14 @@ export default function LoginForm() {
               </motion.div>
             )}
 
-            <Button
+            {/* <Button
               type="button"
               variant="link"
               onClick={() => setView(!view)}
               className="text-xs sm:text-sm text-secondary hover:text-secondary/80 p-0 h-auto font-medium w-full text-left -mt-2"
             >
               {view ? "Use email instead" : "Use phone instead"}
-            </Button>
+            </Button> */}
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm sm:text-base">

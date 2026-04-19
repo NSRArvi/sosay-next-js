@@ -1,10 +1,9 @@
 import React, { useState } from "react";
+import Image from "next/image";
 import {
   Mail,
   Phone,
   User,
-  Calendar,
-  Lock,
   CheckCircle,
   Upload,
   ArrowRight,
@@ -12,8 +11,6 @@ import {
   CalendarIcon,
   Eye,
   EyeOff,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -326,10 +323,12 @@ function StepOne({ view, setView, setEmail, isLoading, onSubmit }) {
   const [name, setName] = useState("");
   const [emailValue, setEmailValue] = useState("");
   const [phoneValue, setPhoneValue] = useState("");
+  const [countryId, setCountryId] = useState("");
   const [date, setDate] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [ageError, setAgeError] = useState("");
+  const { countries, countriesLoading } = useAppContext();
 
   // Generate year options (from 1900 to current year)
   const currentYear = new Date().getFullYear();
@@ -367,6 +366,7 @@ function StepOne({ view, setView, setEmail, isLoading, onSubmit }) {
 
     const formData = new FormData();
     formData.append("name", name);
+    formData.append("country_id", countryId);
     if (view) {
       formData.append("phone", phoneValue);
     } else {
@@ -398,6 +398,22 @@ function StepOne({ view, setView, setEmail, isLoading, onSubmit }) {
           />
           <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-sm sm:text-base">Country</Label>
+        <Select value={countryId} onValueChange={setCountryId} disabled={countriesLoading}>
+          <SelectTrigger className="w-full h-10 sm:h-11 text-sm sm:text-base">
+            <SelectValue placeholder={countriesLoading ? "Loading countries..." : "Select Country"} />
+          </SelectTrigger>
+          <SelectContent className="max-h-[280px]">
+            {countries.map((country) => (
+              <SelectItem key={country.id} value={String(country.id)}>
+                {country.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {view ? (
@@ -432,14 +448,14 @@ function StepOne({ view, setView, setEmail, isLoading, onSubmit }) {
         </div>
       )}
 
-      <Button
+      {/* <Button
         type="button"
         variant="link"
         onClick={() => setView(!view)}
         className="text-xs sm:text-sm text-secondary hover:text-secondary/80 p-0 h-auto font-medium w-full text-left -mt-2"
       >
         {view ? "Use email instead" : "Use phone instead"}
-      </Button>
+      </Button> */}
 
       <div className="space-y-2">
         <Label className="text-sm sm:text-base">Date of Birth</Label>
@@ -467,7 +483,7 @@ function StepOne({ view, setView, setEmail, isLoading, onSubmit }) {
                   value={selectedMonth.toString()} 
                   onValueChange={(value) => setSelectedMonth(parseInt(value))}
                 >
-                  <SelectTrigger className="h-9 text-sm">
+                  <SelectTrigger className="w-full flex-1 h-9 text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -483,7 +499,7 @@ function StepOne({ view, setView, setEmail, isLoading, onSubmit }) {
                   value={selectedYear.toString()} 
                   onValueChange={(value) => setSelectedYear(parseInt(value))}
                 >
-                  <SelectTrigger className="h-9 text-sm">
+                  <SelectTrigger className="w-full flex-1 h-9 text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="max-h-[200px]">
@@ -524,7 +540,7 @@ function StepOne({ view, setView, setEmail, isLoading, onSubmit }) {
       <motion.div whileTap={{ scale: 0.98 }} className="pt-2">
         <Button
           onClick={handleSubmit}
-          disabled={isLoading || !name || (!emailValue && !phoneValue) || !date}
+          disabled={isLoading || !name || !countryId || (!emailValue && !phoneValue) || !date}
           className="w-full bg-secondary text-white font-semibold py-5 sm:py-6 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 text-sm sm:text-base hover:bg-secondary/90"
         >
           {isLoading ? (
@@ -559,7 +575,7 @@ function StepTwo({ view, email, isLoading, onBack, onSubmit }) {
           Verify Your {view ? "Phone" : "Email"}
         </h2>
         <p className="text-sm sm:text-base text-gray-500">
-          We've sent a 6-digit code to {view ? "your phone" : email}
+          We&apos;ve sent a 6-digit code to {view ? "your phone" : email}
         </p>
       </div>
 
@@ -649,7 +665,7 @@ function StepThree({ userId, isLoading, onBack, onSubmit }) {
       <div className="space-y-2">
         <Label htmlFor="gender" className="text-sm sm:text-base">Gender</Label>
         <Select value={gender} onValueChange={setGender}>
-          <SelectTrigger id="gender" className="h-10 sm:h-11 text-sm sm:text-base">
+          <SelectTrigger id="gender" className="w-full h-10 sm:h-11 text-sm sm:text-base">
             <SelectValue placeholder="Select Gender" />
           </SelectTrigger>
           <SelectContent>
@@ -779,9 +795,12 @@ function StepFour({
       <div className="flex flex-col items-center py-6 sm:py-8">
         {imagePreview ? (
           <div className="relative">
-            <img
+            <Image
               src={imagePreview}
               alt="Preview"
+              width={160}
+              height={160}
+              unoptimized
               className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-4 border-secondary shadow-lg"
             />
             <Button

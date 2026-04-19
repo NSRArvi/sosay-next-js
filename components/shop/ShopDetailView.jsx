@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { useAppContext } from "@/context/context";
 import { useRouter, useParams } from "next/navigation";
@@ -16,6 +17,7 @@ import {
   MessageCircle,
   LogIn,
   Share2,
+  Globe,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -53,24 +55,22 @@ async function fetchPublicDetail(slug) {
 
 function ProductDetailSkeleton() {
   return (
-    <div className="flex flex-col md:flex-row">
-      <div className="md:w-2/5 shrink-0 bg-gray-50 p-3">
-        <Skeleton className="h-64 md:h-120 w-full rounded-xl" />
-        <div className="mt-3 flex items-center gap-2">
-          <Skeleton className="h-8 w-8 rounded-full" />
-          <Skeleton className="h-2 w-14 rounded-full" />
-          <Skeleton className="h-2 w-8 rounded-full" />
-          <Skeleton className="h-2 w-10 rounded-full" />
+    <div className="flex flex-col md:grid md:grid-cols-[1fr_1.2fr] md:gap-6">
+      {/* Gallery Skeleton */}
+      <div className="bg-gray-50 rounded-lg overflow-hidden space-y-3">
+        <Skeleton className="h-64 md:h-80 w-full rounded-lg" />
+        <div className="flex gap-2 px-3 pb-3 overflow-x-auto">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="h-16 w-16 rounded-md shrink-0" />
+          ))}
         </div>
       </div>
 
-      <div className="flex-1 p-5 sm:p-6 space-y-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-2 w-full">
-            <Skeleton className="h-6 w-4/5" />
-            <Skeleton className="h-6 w-3/5" />
-          </div>
-          <Skeleton className="h-6 w-20 rounded-full" />
+      {/* Content Skeleton */}
+      <div className="space-y-5">
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-4/5" />
+          <Skeleton className="h-6 w-3/5" />
         </div>
 
         <Skeleton className="h-9 w-40" />
@@ -174,7 +174,7 @@ export default function ShopDetailView() {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="">
         {isLoading ? (
           <ProductDetailSkeleton />
         ) : isError || !item ? (
@@ -183,11 +183,13 @@ export default function ShopDetailView() {
             <p className="text-gray-500 font-medium">Listing not found.</p>
           </div>
         ) : (
-          <div className="flex flex-col md:flex-row">
-            <div className="bg-gray-50 md:w-2/5 shrink-0">
-              <div className="relative h-64 md:h-full min-h-64 bg-gray-100">
-                {images.length > 1 ? (
-                  <>
+          <div className="flex flex-col md:grid md:grid-cols-[1fr_1.2fr] md:gap-6">
+            {/* Gallery Section */}
+            <div className="bg-gray-50 rounded-lg overflow-hidden">
+              {/* Main Image */}
+              <div className="relative h-64 md:h-80 bg-gray-100">
+                {images.length > 0 ? (
+                  images.length > 1 ? (
                     <Swiper
                       className="h-full"
                       onSwiper={(swiper) => {
@@ -198,56 +200,25 @@ export default function ShopDetailView() {
                     >
                       {images.map((img, idx) => (
                         <SwiperSlide key={idx}>
-                          <img
+                          <Image
                             src={img.image_path}
                             alt={item.title}
-                            className="w-full h-full object-cover"
+                            fill
+                            unoptimized
+                            className="object-cover"
                           />
                         </SwiperSlide>
                       ))}
                     </Swiper>
-
-                    <button
-                      type="button"
-                      onClick={() => swiperRef.current?.slidePrev()}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 z-10 h-9 w-9 rounded-full border border-white/60 bg-white/85 backdrop-blur-sm text-gray-700 hover:bg-white hover:text-secondary transition flex items-center justify-center"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => swiperRef.current?.slideNext()}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-9 w-9 rounded-full border border-white/60 bg-white/85 backdrop-blur-sm text-gray-700 hover:bg-white hover:text-secondary transition flex items-center justify-center"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-
-                    <div className="absolute top-3 right-3 z-10 rounded-full bg-black/55 text-white text-[11px] font-medium px-2.5 py-1">
-                      {activeSlide + 1}/{images.length}
-                    </div>
-
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 rounded-full bg-black/35 px-2 py-1.5">
-                      {images.map((_, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => swiperRef.current?.slideTo(idx)}
-                          className={`h-1.5 rounded-full transition-all ${
-                            idx === activeSlide
-                              ? "w-5 bg-secondary"
-                              : "w-1.5 bg-white/90 hover:bg-white"
-                          }`}
-                          aria-label={`Go to image ${idx + 1}`}
-                        />
-                      ))}
-                    </div>
-                  </>
-                ) : images.length === 1 ? (
-                  <img
-                    src={images[0].image_path}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
+                  ) : (
+                    <Image
+                      src={images[0].image_path}
+                      alt={item.title}
+                      fill
+                      unoptimized
+                      className="object-cover"
+                    />
+                  )
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-gray-300">
                     <Package className="h-12 w-12 mb-1" />
@@ -255,9 +226,36 @@ export default function ShopDetailView() {
                   </div>
                 )}
               </div>
+
+              {/* Thumbnail Gallery - visible on md+ */}
+              {images.length > 1 && (
+                <div className="hidden md:flex flex-wrap gap-2 p-3">
+                  {images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => swiperRef.current?.slideTo(idx)}
+                      className={`relative h-20 w-20 rounded-md border-2 overflow-hidden transition-all shrink-0 ${
+                        idx === activeSlide
+                          ? "border-secondary"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                      aria-label={`View image ${idx + 1}`}
+                    >
+                      <Image
+                        src={img.image_path}
+                        alt={`Thumbnail ${idx + 1}`}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className="flex-1 p-5 sm:p-6 space-y-4">
+            {/* Content Section */}
+            <div className="p-5 sm:p-6 md:p-0 space-y-4">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-800 leading-snug">
                   {item.title}
@@ -287,6 +285,14 @@ export default function ShopDetailView() {
                     <span>{item.location}</span>
                   </div>
                 )}
+
+                {item.country && (
+                  <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                    <Globe className="h-4 w-4 shrink-0" />
+                    <span>{item.country.name}</span>
+                  </div>
+                )}
+                
                 {item.category && (
                   <div className="flex items-center gap-1.5 text-sm text-gray-500">
                     <Tag className="h-4 w-4 shrink-0" />
