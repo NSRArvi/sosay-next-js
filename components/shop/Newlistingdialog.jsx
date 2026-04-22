@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, ImagePlus, X, ChevronDown } from "lucide-react";
+import toast from "react-hot-toast";
 import { useAppContext } from "@/context/context";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
@@ -40,7 +41,6 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
   const [previews, setPreviews] = useState([]);
   const [thumbnailIndex, setThumbnailIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
@@ -88,27 +88,31 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
     setImages([]);
     setPreviews([]);
     setThumbnailIndex(0);
-    setError(null);
     setSuccess(false);
     onClose();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
     setIsSubmitting(true);
 
     try {
       if (!form.category_id) {
-        throw new Error("Category is required.");
+        toast.error("Category is required.");
+        setIsSubmitting(false);
+        return;
       }
 
       if (!form.location?.trim()) {
-        throw new Error("Location is required.");
+        toast.error("Location is required.");
+        setIsSubmitting(false);
+        return;
       }
 
       if (!form.country_id) {
-        throw new Error("Country is required.");
+        toast.error("Country is required.");
+        setIsSubmitting(false);
+        return;
       }
 
       const formData = new FormData();
@@ -133,14 +137,15 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
 
       const data = await res.json();
 
-      if (data.status === true || res.ok) {
+      if (data.status === true) {
         setSuccess(true);
+        toast.success(data.message || "Listing created successfully!");
         onSuccess?.(); // refetch the listings list
       } else {
-        throw new Error(data.message || "Failed to create listing");
+        toast.error(data.message || "Failed to create listing");
       }
     } catch (err) {
-      setError(err.message || "Something went wrong. Please try again.");
+      toast.error(err.message || "Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -156,7 +161,9 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
         {/* Header */}
         <div className="flex items-center justify-between mb-1">
           <div>
-            <h2 className="text-base font-bold text-gray-800">Create New Listing</h2>
+            <h2 className="text-base font-bold text-gray-800">
+              Create New Listing
+            </h2>
             <p className="text-xs text-gray-400 mt-0.5">
               Fill in the details to post your item.
             </p>
@@ -200,7 +207,9 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
 
             {/* Description */}
             <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-600">Description</label>
+              <label className="text-xs font-medium text-gray-600">
+                Description
+              </label>
               <textarea
                 name="description"
                 value={form.description}
@@ -214,7 +223,9 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
             {/* Price + Currency */}
             <div className="flex gap-2">
               <div className="space-y-1 w-28 shrink-0">
-                <label className="text-xs font-medium text-gray-600">Currency</label>
+                <label className="text-xs font-medium text-gray-600">
+                  Currency
+                </label>
                 <select
                   name="currency"
                   value={form.currency}
@@ -253,7 +264,9 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
                   <button
                     key={opt.value}
                     type="button"
-                    onClick={() => setForm((prev) => ({ ...prev, condition: opt.value }))}
+                    onClick={() =>
+                      setForm((prev) => ({ ...prev, condition: opt.value }))
+                    }
                     className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${
                       form.condition === opt.value
                         ? "bg-secondary text-white border-secondary"
@@ -267,19 +280,7 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
             </div>
 
             {/* Location + Country + Category */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <div className="space-y-1 flex-1">
-                <label className="text-xs font-medium text-gray-600">Location</label>
-                <input
-                  type="text"
-                  name="location"
-                  value={form.location}
-                  onChange={handleChange}
-                  required
-                  placeholder="e.g. Dhaka, BD"
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 focus:ring-1 focus:ring-secondary/20 transition"
-                />
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div className="space-y-1 flex-1">
                 <label className="text-xs font-medium text-gray-600">
                   Country <span className="text-red-400">*</span>
@@ -332,10 +333,26 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
               </div>
             </div>
 
+            <div className="space-y-1 flex-1">
+              <label className="text-xs font-medium text-gray-600">
+                Location <span className="text-red-400">*</span>
+              </label>
+              <textarea
+                type="text"
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                required
+                placeholder="e.g. Dhaka, BD"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 focus:ring-1 focus:ring-secondary/20 transition"
+              />
+            </div>
+
             {/* Images */}
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-600">
-                Images <span className="text-gray-400 font-normal">(up to 5)</span>
+                Images{" "}
+                <span className="text-gray-400 font-normal">(up to 5)</span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {previews.map((src, i) => (
@@ -343,7 +360,13 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
                     key={i}
                     className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200"
                   >
-                    <Image src={src} alt="" fill unoptimized className="object-cover" />
+                    <Image
+                      src={src}
+                      alt=""
+                      fill
+                      unoptimized
+                      className="object-cover"
+                    />
                     <button
                       type="button"
                       onClick={() => setThumbnailIndex(i)}
@@ -375,10 +398,6 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
                 )}
               </div>
             </div>
-
-            {error && (
-              <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2">{error}</p>
-            )}
 
             <div className="flex gap-2 pt-1">
               <Button

@@ -22,7 +22,13 @@ const CONDITION_OPTIONS = [
   { value: "used_fair", label: "Fair" },
 ];
 
-export default function UpdateListingDialog({ open, onClose, item, accessToken, onSuccess }) {
+export default function UpdateListingDialog({
+  open,
+  onClose,
+  item,
+  accessToken,
+  onSuccess,
+}) {
   const { countries, countriesLoading } = useAppContext();
   const [form, setForm] = useState({
     title: item?.title || "",
@@ -61,7 +67,7 @@ export default function UpdateListingDialog({ open, onClose, item, accessToken, 
         price: item.price || "",
         currency: item.currency === "EUR" ? "EUR" : "USD",
         condition: item.condition || "used_good",
-        country_id: item.country_id ? String(item.country_id) : "",
+        // country_id: item.country_id ? String(item.country_id) : "",
         location: item.location || "",
         category_id: item.category_id ? String(item.category_id) : "",
       });
@@ -113,9 +119,9 @@ export default function UpdateListingDialog({ open, onClose, item, accessToken, 
         throw new Error("Location is required.");
       }
 
-      if (!form.country_id) {
-        throw new Error("Country is required.");
-      }
+      // if (!form.country_id) {
+      //   throw new Error("Country is required.");
+      // }
 
       const formData = new FormData();
       formData.append("_method", "PUT");
@@ -124,7 +130,7 @@ export default function UpdateListingDialog({ open, onClose, item, accessToken, 
       formData.append("currency", form.currency);
       formData.append("category_id", form.category_id);
       formData.append("condition", form.condition);
-      formData.append("country_id", form.country_id);
+      // formData.append("country_id", form.country_id);
       formData.append("location", form.location.trim());
       if (form.description) formData.append("description", form.description);
       newImages.forEach((img, i) => formData.append(`images[${i}]`, img));
@@ -139,12 +145,12 @@ export default function UpdateListingDialog({ open, onClose, item, accessToken, 
       });
 
       const data = await res.json();
-      if (data.status === true || res.ok) {
+      if (data.status === true) {
         toast.success(data.message || "Listing updated!");
         onSuccess?.();
         onClose();
       } else {
-        throw new Error(data.message || "Failed to update listing");
+        toast.error(data.message || "Failed to update listing");
       }
     } catch (err) {
       setError(err.message || "Something went wrong.");
@@ -164,7 +170,9 @@ export default function UpdateListingDialog({ open, onClose, item, accessToken, 
 
         <div className="mb-1">
           <h2 className="text-base font-bold text-gray-800">Edit Listing</h2>
-          <p className="text-xs text-gray-400 mt-0.5">Update your listing details below.</p>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Update your listing details below.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -184,7 +192,9 @@ export default function UpdateListingDialog({ open, onClose, item, accessToken, 
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">Description</label>
+            <label className="text-xs font-medium text-gray-600">
+              Description
+            </label>
             <textarea
               name="description"
               value={form.description}
@@ -197,7 +207,9 @@ export default function UpdateListingDialog({ open, onClose, item, accessToken, 
 
           <div className="flex gap-2">
             <div className="space-y-1 w-28 shrink-0">
-              <label className="text-xs font-medium text-gray-600">Currency</label>
+              <label className="text-xs font-medium text-gray-600">
+                Currency
+              </label>
               <select
                 name="currency"
                 value={form.currency}
@@ -235,7 +247,9 @@ export default function UpdateListingDialog({ open, onClose, item, accessToken, 
                 <button
                   key={opt.value}
                   type="button"
-                  onClick={() => setForm((prev) => ({ ...prev, condition: opt.value }))}
+                  onClick={() =>
+                    setForm((prev) => ({ ...prev, condition: opt.value }))
+                  }
                   className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${
                     form.condition === opt.value
                       ? "bg-secondary text-white border-secondary"
@@ -248,19 +262,7 @@ export default function UpdateListingDialog({ open, onClose, item, accessToken, 
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <div className="space-y-1 flex-1">
-              <label className="text-xs font-medium text-gray-600">Location</label>
-              <input
-                type="text"
-                name="location"
-                value={form.location}
-                onChange={handleChange}
-                required
-                placeholder="e.g. Dhaka, BD"
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 focus:ring-1 focus:ring-secondary/20 transition"
-              />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div className="space-y-1 flex-1">
               <label className="text-xs font-medium text-gray-600">
                 Country <span className="text-red-400">*</span>
@@ -271,7 +273,7 @@ export default function UpdateListingDialog({ open, onClose, item, accessToken, 
                   value={form.country_id}
                   onChange={handleChange}
                   required
-                  disabled={countriesLoading}
+                  disabled
                   className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 focus:ring-1 focus:ring-secondary/20 bg-white appearance-none transition disabled:opacity-60"
                 >
                   <option value="" disabled>
@@ -313,16 +315,37 @@ export default function UpdateListingDialog({ open, onClose, item, accessToken, 
             </div>
           </div>
 
+          <div className="space-y-1 flex-1">
+              <label className="text-xs font-medium text-gray-600">
+                Location <span className="text-red-400">*</span>
+              </label>
+              <textarea
+                type="text"
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                required
+                placeholder="e.g. Dhaka, BD"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 focus:ring-1 focus:ring-secondary/20 transition"
+              />
+            </div>
+
           {existingImages.length > 0 && (
             <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-600">Current Images</label>
+              <label className="text-xs font-medium text-gray-600">
+                Current Images
+              </label>
               <div className="flex flex-wrap gap-2">
                 {existingImages.map((img, i) => (
                   <div
                     key={i}
                     className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200"
                   >
-                    <img src={img.image_path} alt="" className="w-full h-full object-cover" />
+                    <img
+                      src={img.image_path}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
                     {img.is_thumbnail === 1 && (
                       <div className="absolute bottom-0 left-0 right-0 bg-secondary/80 text-white text-[8px] text-center py-0.5">
                         Main
@@ -336,7 +359,8 @@ export default function UpdateListingDialog({ open, onClose, item, accessToken, 
 
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-600">
-              Add New Images <span className="text-gray-400 font-normal">(up to 5)</span>
+              Add New Images{" "}
+              <span className="text-gray-400 font-normal">(up to 5)</span>
             </label>
             <div className="flex flex-wrap gap-2">
               {newPreviews.map((src, i) => (
@@ -344,7 +368,11 @@ export default function UpdateListingDialog({ open, onClose, item, accessToken, 
                   key={i}
                   className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200"
                 >
-                  <img src={src} alt="" className="w-full h-full object-cover" />
+                  <img
+                    src={src}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
                   <button
                     type="button"
                     onClick={() => setThumbnailIndex(i)}
@@ -378,7 +406,9 @@ export default function UpdateListingDialog({ open, onClose, item, accessToken, 
           </div>
 
           {error && (
-            <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+            <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2">
+              {error}
+            </p>
           )}
 
           <div className="flex gap-2 pt-1">
