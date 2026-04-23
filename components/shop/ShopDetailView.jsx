@@ -9,8 +9,6 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
   MapPin,
   Package,
   Tag,

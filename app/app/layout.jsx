@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import AppSidebar from "@/components/shared/AppSidebar";
 import BottomBar from "@/components/shared/BottomBar";
 import TopBar from "@/components/shared/TopBar";
@@ -9,6 +10,7 @@ import CreateButtons from "@/components/shared/CreateButtons";
 
 export default function Layout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <PrivateRoute>
@@ -26,7 +28,7 @@ export default function Layout({ children }) {
         </div> */}
       </div>
       <BottomBar onUserClick={() => setIsSidebarOpen((v) => !v)} />
-      <CreateButtons />
+      {pathname !== "/app/message" && <CreateButtons />}
     </PrivateRoute>
   );
 }

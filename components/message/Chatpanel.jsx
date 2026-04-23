@@ -154,7 +154,6 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
   const emojiPickerRef = useRef(null);
   const emojiButtonRef = useRef(null);
   const queryClient = useQueryClient();
-  console.log(receiver);
   
 
   // ── Close picker on outside click ──────────────────────────────────────
