@@ -39,6 +39,7 @@ export default function UpdateListingDialog({
     country_id: item?.country_id ? String(item.country_id) : "",
     location: item?.location || "",
     category_id: item?.category_id ? String(item.category_id) : "",
+    sub_category_id: item?.sub_category_id ? String(item.sub_category_id) : "",
   });
   const [newImages, setNewImages] = useState([]);
   const [newPreviews, setNewPreviews] = useState([]);
@@ -59,6 +60,19 @@ export default function UpdateListingDialog({
   });
   const categories = categoriesData?.data || [];
 
+  const { data: subcategoriesData, isLoading: subcategoriesLoading } = useQuery({
+    queryKey: ["/marketplace/subcategories", form.category_id, accessToken],
+    queryFn: async () => {
+      const res = await fetch(`${BASE_URL}/marketplace/${form.category_id}/subcategories`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      return res.json();
+    },
+    enabled: !!accessToken && !!form.category_id,
+    staleTime: 1000 * 60 * 5,
+  });
+  const subcategories = subcategoriesData?.data || [];
+
   React.useEffect(() => {
     if (item) {
       setForm({
@@ -69,8 +83,7 @@ export default function UpdateListingDialog({
         condition: item.condition || "used_good",
         // country_id: item.country_id ? String(item.country_id) : "",
         location: item.location || "",
-        category_id: item.category_id ? String(item.category_id) : "",
-      });
+        category_id: item.category_id ? String(item.category_id) : "",        sub_category_id: item.sub_category_id ? String(item.sub_category_id) : "",      });
       setNewImages([]);
       setNewPreviews([]);
       setThumbnailIndex(0);
@@ -80,7 +93,12 @@ export default function UpdateListingDialog({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    // Reset subcategory when category changes
+    if (name === "category_id") {
+      setForm((prev) => ({ ...prev, [name]: value, sub_category_id: "" }));
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleImageChange = (e) => {
@@ -115,6 +133,10 @@ export default function UpdateListingDialog({
         throw new Error("Category is required.");
       }
 
+      if (subcategories.length > 0 && !form.sub_category_id) {
+        throw new Error("Subcategory is required.");
+      }
+
       if (!form.location?.trim()) {
         throw new Error("Location is required.");
       }
@@ -129,6 +151,9 @@ export default function UpdateListingDialog({
       formData.append("price", form.price);
       formData.append("currency", form.currency);
       formData.append("category_id", form.category_id);
+      if (form.sub_category_id) {
+        formData.append("sub_category_id", form.sub_category_id);
+      }
       formData.append("condition", form.condition);
       // formData.append("country_id", form.country_id);
       formData.append("location", form.location.trim());
@@ -314,6 +339,35 @@ export default function UpdateListingDialog({
               </div>
             </div>
           </div>
+
+          {/* Subcategory - show only if category selected and subcategories exist */}
+          {form.category_id && subcategories.length > 0 && (
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-600">
+                Subcategory <span className="text-red-400">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  name="sub_category_id"
+                  value={form.sub_category_id}
+                  onChange={handleChange}
+                  required
+                  disabled={subcategoriesLoading}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 focus:ring-1 focus:ring-secondary/20 bg-white appearance-none transition disabled:opacity-60"
+                >
+                  <option value="" disabled>
+                    {subcategoriesLoading ? "Loading..." : "Select subcategory"}
+                  </option>
+                  {subcategories.map((subcat) => (
+                    <option key={subcat.id} value={subcat.id}>
+                      {subcat.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+          )}
 
           <div className="space-y-1 flex-1">
               <label className="text-xs font-medium text-gray-600">

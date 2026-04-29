@@ -35,7 +35,7 @@ export default function Page() {
   return (
     <section className="relative h-[calc(100dvh-56px)] md:h-[calc(100dvh-32px)] mt-14 md:mt-8 p-4 overflow-hidden">
       <div className="hidden lg:flex gap-8 h-full">
-        <div className="lg:w-1/4 h-full overflow-hidden">
+        <div className="lg:w-2/5 h-full overflow-hidden">
           <ChatHistory
             setReceiver={setReceiver}
             receiver={desktopReceiver}
@@ -46,7 +46,7 @@ export default function Page() {
           />
         </div>
 
-        <div className="lg:w-3/4 h-full overflow-hidden">
+        <div className="lg:w-3/5 h-full overflow-hidden">
           <Chatpanel receiver={desktopReceiver} />
         </div>
       </div>

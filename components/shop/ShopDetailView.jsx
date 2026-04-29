@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Chatpanel from "@/components/message/Chatpanel";
+import { ListingCard } from "@/components/shop/Listingcard";
 import toast from "react-hot-toast";
 import "swiper/css";
 
@@ -101,7 +102,7 @@ function ProductDetailSkeleton() {
 export default function ShopDetailView() {
   const router = useRouter();
   const params = useParams();
-  const { accessToken } = useAppContext();
+  const { accessToken, userInfo } = useAppContext();
   const slug = params?.slug;
   const swiperRef = useRef(null);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -115,8 +116,6 @@ export default function ShopDetailView() {
   });
 
   const item = data?.data;
-  console.log("item:", item);
-  
   const images = item?.images || [];
   const conditionStyle =
     CONDITION_STYLES[item?.condition] || CONDITION_STYLES.used_fair;
@@ -164,11 +163,6 @@ export default function ShopDetailView() {
             <Share2 className="h-4 w-4" />
             Share
           </button>
-          {item?.category && (
-            <Badge variant="outline" className="rounded-full border-gray-200 text-gray-600">
-              {item.category}
-            </Badge>
-          )}
         </div>
       </div>
 
@@ -194,7 +188,9 @@ export default function ShopDetailView() {
                         swiperRef.current = swiper;
                         setActiveSlide(swiper.realIndex || 0);
                       }}
-                      onSlideChange={(swiper) => setActiveSlide(swiper.realIndex)}
+                      onSlideChange={(swiper) =>
+                        setActiveSlide(swiper.realIndex)
+                      }
                     >
                       {images.map((img, idx) => (
                         <SwiperSlide key={idx}>
@@ -290,11 +286,11 @@ export default function ShopDetailView() {
                     <span>{item.country.name}</span>
                   </div>
                 )}
-                
+
                 {item.category && (
                   <div className="flex items-center gap-1.5 text-sm text-gray-500">
                     <Tag className="h-4 w-4 shrink-0" />
-                    <span>{item.category}</span>
+                    <span>{item.category.name}</span>
                   </div>
                 )}
               </div>
@@ -307,22 +303,28 @@ export default function ShopDetailView() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-semibold text-gray-700">{item.user?.name}</p>
+                  <p className="text-sm font-semibold text-gray-700">
+                    {item.user?.name}
+                  </p>
                   <p className="text-xs text-gray-400">Seller</p>
                 </div>
               </div>
 
               {accessToken ? (
-                <Button
-                  onClick={() => {
-                    setOpenChatDialog(true);
-                    setReceiver(item.user);
-                  }}
-                  className="w-full bg-secondary hover:bg-secondary/90 rounded-full gap-2"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Contact Seller
-                </Button>
+                <>
+                  {item?.user_id !== userInfo?.id && (
+                    <Button
+                      onClick={() => {
+                        setOpenChatDialog(true);
+                        setReceiver(item.user);
+                      }}
+                      className="w-full bg-secondary hover:bg-secondary/90 rounded-full gap-2"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      Contact Seller
+                    </Button>
+                  )}
+                </>
               ) : (
                 <Button
                   onClick={() => router.push("/register")}
@@ -341,10 +343,33 @@ export default function ShopDetailView() {
         <DialogContent className="h-dvh w-screen max-w-none rounded-none border-0 p-0 sm:h-[92dvh] sm:w-[96vw] sm:rounded-xl sm:border sm:max-w-4xl">
           <DialogTitle className="sr-only">Chat</DialogTitle>
           <div className="h-full overflow-hidden">
-            <Chatpanel receiver={receiver} setShowChatPanel={setOpenChatDialog} />
+            <Chatpanel
+              receiver={receiver}
+              setShowChatPanel={setOpenChatDialog}
+            />
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Related Items Section */}
+      {data?.related_items && data.related_items.length > 0 && (
+        <div className="max-w-5xl mx-auto px-4 mt-12 border-t border-gray-200 pt-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            Related Products
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {data.related_items.map((relatedItem) => (
+              <div
+                key={relatedItem.id}
+                onClick={() => router.push(`/shop/${relatedItem.id}`)}
+                className="cursor-pointer"
+              >
+                <ListingCard item={relatedItem} onSelect={() => {}} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

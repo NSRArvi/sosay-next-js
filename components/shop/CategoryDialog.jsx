@@ -48,22 +48,22 @@ export default function CategoryDialog({
               {categories.map((category) => (
                 <div
                   key={category.id}
-                  className="group relative overflow-hidden rounded border border-black shadow-md transition duration-300 hover:-translate-y-0.5 hover:shadow-xl"
+                  className=""
                 >
                   <button
                     type="button"
                     onClick={() => onSelect(category.id)}
-                    className="block w-full text-left"
+                    className="block w-full"
                   >
-                    <div className="relative aspect-video w-full overflow-hidden bg-gray-100">
+                    <div className="relative aspect-video w-full overflow-hidden">
                       <Image
                         src={category.icon}
                         alt={category.name}
                         width={1000}
                         height={1000}
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                        className="h-full w-full object-cover rounded"
                       />
-                      <span className="absolute top-2 left-1/2 -translate-x-1/2 rounded bg-black/80 px-3 py-1 text-sm font-semibold text-white truncate max-w-[80%]">
+                      <span className="absolute bottom-2 right-2 rounded bg-black/80 px-3 py-1 text-sm font-semibold text-white truncate max-w-[80%]">
                         {category.name}
                       </span>
                     </div>

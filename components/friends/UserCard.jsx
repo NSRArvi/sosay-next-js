@@ -1,31 +1,62 @@
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { Eye, Loader2, UserCheck, UserPlus, UserMinus, X, Check } from "lucide-react";
-import Link from "next/link";
 
 export default function UserCard({ user, type, onAction, isLoading, currentAction }) {
+  const handleStopPropagation = (e) => {
+    e.stopPropagation();
+  };
+
   const getActionButtons = () => {
     switch (type) {
       case "suggested":
         return (
-          <button
-            onClick={() => onAction(user.id, "send")}
-            disabled={isLoading && currentAction === "send"}
-            className="cursor-pointer group absolute top-3 right-3 h-10 w-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-blue-500/90 hover:border-blue-400 transition-all duration-300 flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Add Friend"
-          >
-            {isLoading && currentAction === "send" ? (
-              <Loader2 className="h-5 w-5 text-white animate-spin" />
-            ) : (
-              <UserPlus className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
-            )}
-          </button>
+          <div className="absolute top-3 right-3 flex gap-2 z-10">
+            <button
+              onClick={(e) => {
+                handleStopPropagation(e);
+                onAction(user.id, "view");
+              }}
+              className="cursor-pointer group h-10 w-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-purple-500/90 hover:border-purple-400 transition-all duration-300 flex items-center justify-center shadow-lg"
+              title="View Profile"
+            >
+              <Eye className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
+            </button>
+            <button
+              onClick={(e) => {
+                handleStopPropagation(e);
+                onAction(user.id, "send");
+              }}
+              disabled={isLoading && currentAction === "send"}
+              className="cursor-pointer group h-10 w-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-blue-500/90 hover:border-blue-400 transition-all duration-300 flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Add Friend"
+            >
+              {isLoading && currentAction === "send" ? (
+                <Loader2 className="h-5 w-5 text-white animate-spin" />
+              ) : (
+                <UserPlus className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
+              )}
+            </button>
+          </div>
         );
       case "requested":
         return (
-          <div className="absolute top-3 right-3 flex gap-2">
+          <div className="absolute top-3 right-3 flex gap-2 z-10">
             <button
-              onClick={() => onAction(user.id, "accept")}
+              onClick={(e) => {
+                handleStopPropagation(e);
+                onAction(user.id, "view");
+              }}
+              className="cursor-pointer group h-10 w-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-purple-500/90 hover:border-purple-400 transition-all duration-300 flex items-center justify-center shadow-lg"
+              title="View Profile"
+            >
+              <Eye className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
+            </button>
+            <button
+              onClick={(e) => {
+                handleStopPropagation(e);
+                onAction(user.id, "accept");
+              }}
               disabled={isLoading && currentAction === "accept"}
               className="cursor-pointer group h-10 w-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-green-500/90 hover:border-green-400 transition-all duration-300 flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               title="Accept"
@@ -37,7 +68,10 @@ export default function UserCard({ user, type, onAction, isLoading, currentActio
               )}
             </button>
             <button
-              onClick={() => onAction(user.id, "reject")}
+              onClick={(e) => {
+                handleStopPropagation(e);
+                onAction(user.id, "reject");
+              }}
               disabled={isLoading && currentAction === "reject"}
               className="cursor-pointer group h-10 w-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-red-500/90 hover:border-red-400 transition-all duration-300 flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               title="Reject"
@@ -52,31 +86,52 @@ export default function UserCard({ user, type, onAction, isLoading, currentActio
         );
       case "sent":
         return (
-          <button
-            onClick={() => onAction(user.id, "cancel")}
-            disabled={isLoading && currentAction === "cancel"}
-            className="cursor-pointer group absolute top-3 right-3 h-10 w-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-red-500/90 hover:border-red-400 transition-all duration-300 flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Cancel Request"
-          >
-            {isLoading && currentAction === "cancel" ? (
-              <Loader2 className="h-5 w-5 text-white animate-spin" />
-            ) : (
-              <X className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
-            )}
-          </button>
-        );
-      case "friends":
-        return (
-          <div className="absolute top-3 right-3 flex gap-2">
+          <div className="absolute top-3 right-3 flex gap-2 z-10">
             <button
-              onClick={() => onAction(user.id, "view")}
+              onClick={(e) => {
+                handleStopPropagation(e);
+                onAction(user.id, "view");
+              }}
               className="cursor-pointer group h-10 w-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-purple-500/90 hover:border-purple-400 transition-all duration-300 flex items-center justify-center shadow-lg"
               title="View Profile"
             >
               <Eye className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
             </button>
             <button
-              onClick={() => onAction(user.id, "unfriend")}
+              onClick={(e) => {
+                handleStopPropagation(e);
+                onAction(user.id, "cancel");
+              }}
+              disabled={isLoading && currentAction === "cancel"}
+              className="cursor-pointer group h-10 w-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-red-500/90 hover:border-red-400 transition-all duration-300 flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Cancel Request"
+            >
+              {isLoading && currentAction === "cancel" ? (
+                <Loader2 className="h-5 w-5 text-white animate-spin" />
+              ) : (
+                <X className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
+              )}
+            </button>
+          </div>
+        );
+      case "friends":
+        return (
+          <div className="absolute top-3 right-3 flex gap-2 z-10">
+            <button
+              onClick={(e) => {
+                handleStopPropagation(e);
+                onAction(user.id, "view");
+              }}
+              className="cursor-pointer group h-10 w-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-purple-500/90 hover:border-purple-400 transition-all duration-300 flex items-center justify-center shadow-lg"
+              title="View Profile"
+            >
+              <Eye className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
+            </button>
+            <button
+              onClick={(e) => {
+                handleStopPropagation(e);
+                onAction(user.id, "unfriend");
+              }}
               disabled={isLoading && currentAction === "unfriend"}
               className="cursor-pointer group h-10 w-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-red-500/90 hover:border-red-400 transition-all duration-300 flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               title="Unfriend"
@@ -95,7 +150,7 @@ export default function UserCard({ user, type, onAction, isLoading, currentActio
   };
 
   return (
-    <Link href={`/app/profile/${user?.id}`} className="relative group overflow-hidden rounded-lg shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:scale-[1.02]">
+    <div className="relative group overflow-hidden rounded-lg shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:scale-[1.02]">
       {/* Background Image or Gradient */}
       <div className="relative h-80 w-full">
         {user?.user_image ? (
@@ -154,6 +209,6 @@ export default function UserCard({ user, type, onAction, isLoading, currentActio
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
       </div>
-    </Link>
+    </div>
   );
 }

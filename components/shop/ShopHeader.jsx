@@ -7,7 +7,7 @@ export default function ShopHeader() {
 
   return (
     <div className="mb-8">
-      <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col md:flex-row gap-4 items-center md:items-start">
           <Image
             src="/images/logo/scotty.webp"
@@ -15,9 +15,8 @@ export default function ShopHeader() {
             width={60}
             height={60}
             className="rounded-full shrink-0"
-            style={{ border: "2.5px solid #F97316" }}
           />
-          <div>
+          <div className="">
             <h3 className="text-xl font-extrabold text-gray-900">
               Join Sosay Free
             </h3>

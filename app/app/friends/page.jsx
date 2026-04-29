@@ -1,44 +1,119 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
 import { fetchWithToken } from "@/helpers/api";
 import toast from "react-hot-toast";
 import UserCard from "@/components/friends/UserCard";
 import UserCardSkleton from "@/components/friends/UserCardSkleton";
 
-const UserCardSkeletonList = () => (
+const UserCardSkeletonList = ({ limit = 6 }) => (
   <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-    {[...Array(6)].map((_, i) => (
+    {[...Array(limit)].map((_, i) => (
       <UserCardSkleton key={i} />
     ))}
   </div>
 );
 
-// Tab Content Component
-const FriendsTabContent = ({ endpoint, type, title }) => {
+// Tab Content Component with Infinite Scroll
+const FriendsTabContent = ({ endpoint, type, title, tabName, onTotalUpdate, showCount = true }) => {
   const { accessToken } = useAppContext();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [loadingState, setLoadingState] = useState({ userId: null, action: null });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [allUsers, setAllUsers] = useState([]);
+  const [pagination, setPagination] = useState({});
+  console.log(pagination);
+  const [hasNextPage, setHasNextPage] = useState(true);
+  const userRefsContainer = useRef(null);
+  const observerRef = useRef(null);
+  const userRefs = useRef([]);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: [endpoint, accessToken],
-    queryFn: fetchWithToken,
-    enabled: !!accessToken,
+  // Fetch users for specific page
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: [endpoint, accessToken, currentPage],
+    queryFn: ({ queryKey }) => {
+      const [endpointKey, token] = queryKey;
+      const separator = endpointKey.includes("?") ? "&" : "?";
+      return fetchWithToken({
+        queryKey: [`${endpointKey}${separator}page=${currentPage}`, token],
+      });
+    },
+    enabled: !!accessToken && hasNextPage,
+    keepPreviousData: true,
   });
+
+  // Combine users from all pages
+  useEffect(() => {
+    if (data?.data) {
+      if (currentPage === 1) {
+        setAllUsers(data.data);
+      } else {
+        setAllUsers((prev) => [...prev, ...data.data]);
+      }
+      setPagination(data.pagination || {});
+      setHasNextPage(!!data.pagination?.next_page_url);
+      
+      // Notify parent about total count only on first page load
+      if (currentPage === 1 && onTotalUpdate && showCount && tabName) {
+        onTotalUpdate(tabName, data.pagination?.total || 0);
+      }
+    }
+  }, [data, currentPage]);
+
+  // Setup Intersection Observer for 60% threshold
+  useEffect(() => {
+    if (!userRefsContainer.current || allUsers.length === 0) return;
+
+    const observerOptions = {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.6,
+    };
+
+    const observerCallback = (entries) => {
+      entries.forEach((entry) => {
+        const index = userRefs.current.indexOf(entry.target);
+        const threshold60Percent = Math.ceil(allUsers.length * 0.6);
+
+        if (entry.isIntersecting && index >= threshold60Percent - 1) {
+          if (hasNextPage && !isFetching && currentPage < pagination.last_page) {
+            setCurrentPage((prev) => prev + 1);
+          }
+        }
+      });
+    };
+
+    observerRef.current = new IntersectionObserver(
+      observerCallback,
+      observerOptions
+    );
+
+    const thresholdIndex = Math.ceil(allUsers.length * 0.6) - 1;
+    if (userRefs.current[thresholdIndex]) {
+      observerRef.current.observe(userRefs.current[thresholdIndex]);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [allUsers.length, hasNextPage, isFetching, currentPage, pagination.last_page]);
 
   const handleAction = async (userId, action) => {
     setLoadingState({ userId, action });
-    
+
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_DEV_URL;
 
       switch (action) {
         case "send": {
-          // Send friend request
           const formData = new FormData();
           formData.append("friend_id", userId);
 
@@ -53,8 +128,7 @@ const FriendsTabContent = ({ endpoint, type, title }) => {
           const data = await response.json();
           if (data.status === true) {
             toast.success(data.message || "Friend request sent!");
-            // Refetch suggested and sent lists
-            queryClient.invalidateQueries(["/friendship/suggest-friends"]);
+            queryClient.invalidateQueries([endpoint]);
             queryClient.invalidateQueries(["/friendship/sent-friends-request"]);
           } else {
             toast.error(data.message || "Failed to send friend request");
@@ -63,7 +137,6 @@ const FriendsTabContent = ({ endpoint, type, title }) => {
         }
 
         case "accept": {
-          // Accept friend request - Changed to POST method
           const response = await fetch(
             `${baseUrl}/friendship/manage-requested-friends?friend_id=${userId}&status=2`,
             {
@@ -77,8 +150,7 @@ const FriendsTabContent = ({ endpoint, type, title }) => {
           const data = await response.json();
           if (data.status === true) {
             toast.success(data.message || "Friend request accepted!");
-            // Refetch requests and friends lists
-            queryClient.invalidateQueries(["/friendship/requested-friends"]);
+            queryClient.invalidateQueries([endpoint]);
             queryClient.invalidateQueries(["/friendship/my-friends?status=2"]);
           } else {
             toast.error(data.message || "Failed to accept friend request");
@@ -87,7 +159,6 @@ const FriendsTabContent = ({ endpoint, type, title }) => {
         }
 
         case "reject": {
-          // Reject friend request - Changed to POST method (status=3 for delete)
           const response = await fetch(
             `${baseUrl}/friendship/manage-requested-friends?friend_id=${userId}&status=3`,
             {
@@ -101,8 +172,7 @@ const FriendsTabContent = ({ endpoint, type, title }) => {
           const data = await response.json();
           if (data.status === true) {
             toast.success(data.message || "Friend request rejected");
-            // Refetch requests list
-            queryClient.invalidateQueries(["/friendship/requested-friends"]);
+            queryClient.invalidateQueries([endpoint]);
           } else {
             toast.error(data.message || "Failed to reject friend request");
           }
@@ -110,7 +180,6 @@ const FriendsTabContent = ({ endpoint, type, title }) => {
         }
 
         case "cancel": {
-          // Cancel sent friend request
           const formData = new FormData();
           formData.append("friend_id", userId);
 
@@ -125,8 +194,7 @@ const FriendsTabContent = ({ endpoint, type, title }) => {
           const data = await response.json();
           if (data.status === true) {
             toast.success(data.message || "Friend request cancelled");
-            // Refetch sent requests and suggested lists
-            queryClient.invalidateQueries(["/friendship/sent-friends-request"]);
+            queryClient.invalidateQueries([endpoint]);
             queryClient.invalidateQueries(["/friendship/suggest-friends"]);
           } else {
             toast.error(data.message || "Failed to cancel friend request");
@@ -135,7 +203,6 @@ const FriendsTabContent = ({ endpoint, type, title }) => {
         }
 
         case "unfriend": {
-          // Unfriend - New action
           const formData = new FormData();
           formData.append("friend_id", userId);
 
@@ -150,8 +217,7 @@ const FriendsTabContent = ({ endpoint, type, title }) => {
           const data = await response.json();
           if (data.status === true) {
             toast.success(data.message || "Friend removed successfully");
-            // Refetch friends and suggested lists
-            queryClient.invalidateQueries(["/friendship/my-friends?status=2"]);
+            queryClient.invalidateQueries([endpoint]);
             queryClient.invalidateQueries(["/friendship/suggest-friends"]);
           } else {
             toast.error(data.message || "Failed to remove friend");
@@ -160,7 +226,7 @@ const FriendsTabContent = ({ endpoint, type, title }) => {
         }
 
         case "view": {
-          toast.info("Profile view feature - implement navigation here");
+          router.push(`/app/profile/${userId}`);
           break;
         }
 
@@ -177,20 +243,7 @@ const FriendsTabContent = ({ endpoint, type, title }) => {
 
   if (isLoading) return <UserCardSkeletonList />;
 
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-red-500 mb-4">
-          Failed to load {title.toLowerCase()}
-        </p>
-        <Button onClick={() => window.location.reload()}>Try Again</Button>
-      </div>
-    );
-  }
-
-  const users = data?.data || [];
-
-  if (users.length === 0) {
+  if (allUsers.length === 0 && !isFetching) {
     return (
       <div className="text-center py-12">
         <Users className="h-16 w-16 mx-auto text-gray-300 mb-4" />
@@ -203,25 +256,61 @@ const FriendsTabContent = ({ endpoint, type, title }) => {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-      {users.map((user) => (
-        <UserCard
-          key={user.id}
-          user={user}
-          type={type}
-          onAction={handleAction}
-          isLoading={loadingState.userId === user.id}
-          currentAction={loadingState.action}
-        />
-      ))}
+    <div ref={userRefsContainer} className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+        {allUsers.map((user, i) => (
+          <div
+            key={user.id}
+            ref={(el) => {
+              if (el) userRefs.current[i] = el;
+            }}
+          >
+            <UserCard
+              user={user}
+              type={type}
+              onAction={handleAction}
+              isLoading={loadingState.userId === user.id}
+              currentAction={loadingState.action}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Loading indicator for next page */}
+      {isFetching && currentPage > 1 && (
+        <div className="py-8">
+          <UserCardSkeletonList limit={3} />
+        </div>
+      )}
+
+      {/* All users loaded message */}
+      {!hasNextPage && allUsers.length > 0 && (
+        <div className="text-center py-8 text-gray-500">
+          <p className="text-lg">You've seen all {title.toLowerCase()}!</p>
+        </div>
+      )}
     </div>
   );
 };
 
 // Main Friends Page Component
 export default function FriendsPage() {
+  const [totals, setTotals] = useState({
+    suggested: 0,
+    friends: 0,
+    requests: 0,
+    sent: 0,
+  });
+
+  const handleTotalUpdate = useCallback((tab, count) => {
+    setTotals((prev) => ({
+      ...prev,
+      [tab]: count,
+    }));
+  }, []);
+
   return (
-    <section className="max-w-2xl mx-auto mt-14 md:mt-8 p-4">
+    <section className="max-w-4xl mx-auto mt-14 md:mt-8 p-4">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Friends</h1>
         <p className="text-gray-600">
@@ -230,11 +319,34 @@ export default function FriendsPage() {
       </div>
 
       <Tabs defaultValue="suggested" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-6">
-          <TabsTrigger className="cursor-pointer" value="suggested">Suggested</TabsTrigger>
-          <TabsTrigger className="cursor-pointer" value="friends">Friends</TabsTrigger>
-          <TabsTrigger className="cursor-pointer" value="requests">Requests</TabsTrigger>
-          <TabsTrigger className="cursor-pointer" value="sent">Sent</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 mb-6 gap-2">
+          <TabsTrigger className="cursor-pointer text-xs sm:text-sm" value="suggested">
+            Suggested
+          </TabsTrigger>
+          <TabsTrigger className="cursor-pointer text-xs sm:text-sm" value="friends">
+            Friends
+            {totals.friends > 0 && (
+              <span className="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-y-px bg-green-600 rounded-full">
+                {totals.friends}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger className="cursor-pointer text-xs sm:text-sm" value="requests">
+            Requests
+            {totals.requests > 0 && (
+              <span className="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-y-px bg-orange-600 rounded-full">
+                {totals.requests}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger className="cursor-pointer text-xs sm:text-sm" value="sent">
+            Sent
+            {totals.sent > 0 && (
+              <span className="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-y-px bg-purple-600 rounded-full">
+                {totals.sent}
+              </span>
+            )}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="suggested">
@@ -242,6 +354,9 @@ export default function FriendsPage() {
             endpoint="/friendship/suggest-friends"
             type="suggested"
             title="Suggested Friends"
+            tabName="suggested"
+            onTotalUpdate={handleTotalUpdate}
+            showCount={false}
           />
         </TabsContent>
 
@@ -250,6 +365,9 @@ export default function FriendsPage() {
             endpoint="/friendship/my-friends?status=2"
             type="friends"
             title="Friends"
+            tabName="friends"
+            onTotalUpdate={handleTotalUpdate}
+            showCount={true}
           />
         </TabsContent>
 
@@ -258,6 +376,9 @@ export default function FriendsPage() {
             endpoint="/friendship/requested-friends"
             type="requested"
             title="Friend Requests"
+            tabName="requests"
+            onTotalUpdate={handleTotalUpdate}
+            showCount={true}
           />
         </TabsContent>
 
@@ -266,6 +387,9 @@ export default function FriendsPage() {
             endpoint="/friendship/sent-friends-request"
             type="sent"
             title="Sent Requests"
+            tabName="sent"
+            onTotalUpdate={handleTotalUpdate}
+            showCount={true}
           />
         </TabsContent>
       </Tabs>
