@@ -34,8 +34,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
 
 const SORT_OPTIONS = [
   { value: "", label: "Default" },
-  { value: "asc", label: "Price: Low to High" },
-  { value: "desc", label: "Price: High to Low" },
+  { value: "asc", label: "Low to High" },
+  { value: "desc", label: "High to Low" },
 ];
 
 let hasShownInitialCategoryDialog = false;

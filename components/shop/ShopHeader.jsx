@@ -21,8 +21,7 @@ export default function ShopHeader() {
               Join Sosay Free
             </h3>
             <p className="mt-1 text-sm text-gray-600">
-              List up to <strong className="text-gray-900">3 ads free</strong>{" "}
-              as private or business seller.
+              List up to 3 Free Ads – Post, Sell, Replace Anytime
             </p>
             <p className="mt-3 text-sm text-gray-600">Need more listings?</p>
             <p className="text-sm text-gray-600">

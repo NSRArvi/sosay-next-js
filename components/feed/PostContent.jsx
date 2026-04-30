@@ -6,11 +6,13 @@ const LANGUAGES = [
   { label: "French", value: "fr" },
   { label: "Arabic", value: "ar" },
   { label: "Hindi", value: "hi" },
-  { label: "Chinese", value: "zh" },
+  { label: "Chinese", value: "zh-CN" },
   { label: "Japanese", value: "ja" },
   { label: "German", value: "de" },
   { label: "Portuguese", value: "pt" },
   { label: "Russian", value: "ru" },
+  { label: "Italian", value: "it" },
+  { label: "Korean", value: "ko" },
 ];
 
 function stripHtml(html) {
@@ -19,14 +21,58 @@ function stripHtml(html) {
   return div.innerText || div.textContent || "";
 }
 
-async function translateText(text, targetLang) {
-  const plainText = stripHtml(text); // MyMemory doesn't handle HTML well
-  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(plainText)}&langpair=en|${targetLang}`;
+function chunkText(text, maxChars = 490) {
+  // Split by sentence endings to keep chunks meaningful
+  const sentences = text.match(/[^.!?]+[.!?]*/g) || [text];
+  const chunks = [];
+  let current = "";
+
+  for (const sentence of sentences) {
+    if ((current + sentence).length > maxChars) {
+      if (current) chunks.push(current.trim());
+      // If a single sentence itself exceeds limit, split by words
+      if (sentence.length > maxChars) {
+        const words = sentence.split(" ");
+        let wordChunk = "";
+        for (const word of words) {
+          if ((wordChunk + " " + word).length > maxChars) {
+            if (wordChunk) chunks.push(wordChunk.trim());
+            wordChunk = word;
+          } else {
+            wordChunk += " " + word;
+          }
+        }
+        if (wordChunk) chunks.push(wordChunk.trim());
+        current = "";
+      } else {
+        current = sentence;
+      }
+    } else {
+      current += sentence;
+    }
+  }
+  if (current) chunks.push(current.trim());
+  return chunks;
+}
+
+async function translateChunk(chunk, targetLang) {
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=en|${targetLang}`;
   const res = await fetch(url);
   const data = await res.json();
-
   if (data.responseStatus !== 200) throw new Error("Translation failed");
   return data.responseData.translatedText;
+}
+
+async function translateText(text, targetLang) {
+  const plainText = stripHtml(text);
+  const chunks = chunkText(plainText);
+
+  // Translate all chunks in parallel
+  const results = await Promise.all(
+    chunks.map((chunk) => translateChunk(chunk, targetLang))
+  );
+
+  return results.join(" ");
 }
 
 export default function PostContent({ description, maxLength = 300 }) {
@@ -38,15 +84,14 @@ export default function PostContent({ description, maxLength = 300 }) {
 
   if (!description) return null;
 
-  const displayContent = translatedContent ?? description;
   const isLongContent = description.length > maxLength;
 
   async function handleTranslate(e) {
     const lang = e.target.value;
     if (!lang) return;
-    e.target.value = ""; // reset dropdown
+    e.target.value = "";
 
-    // Toggle off if same language selected again
+    // Clicking same language reverts
     if (lang === translatedLang) {
       setTranslatedContent(null);
       setTranslatedLang(null);
@@ -55,10 +100,11 @@ export default function PostContent({ description, maxLength = 300 }) {
 
     setIsTranslating(true);
     setError(null);
+
     try {
       const result = await translateText(description, lang);
       setTranslatedContent(result);
-      setTranslatedLang(LANGUAGES.find((l) => l.value === lang)?.label ?? lang);
+      setTranslatedLang(lang);
     } catch (err) {
       setError("Translation failed. Please try again.");
     } finally {
@@ -72,23 +118,25 @@ export default function PostContent({ description, maxLength = 300 }) {
     setError(null);
   }
 
+  const langLabel = LANGUAGES.find((l) => l.value === translatedLang)?.label;
+
   return (
     <div className="mb-3">
-      {/* Content — plain text if translated (HTML if original) */}
       <div
         className={`text-gray-800 leading-relaxed text-sm ${
           !showFullContent && isLongContent ? "line-clamp-3" : ""
         }`}
       >
         {translatedContent ? (
+          // Plain text after translation (HTML stripped)
           translatedContent
         ) : (
+          // Original with HTML preserved
           <span dangerouslySetInnerHTML={{ __html: description }} />
         )}
       </div>
 
       <div className="flex items-center gap-3 flex-wrap mt-1">
-        {/* Read more / Show less */}
         {isLongContent && (
           <button
             onClick={() => setShowFullContent(!showFullContent)}
@@ -98,7 +146,6 @@ export default function PostContent({ description, maxLength = 300 }) {
           </button>
         )}
 
-        {/* Translate dropdown */}
         {isTranslating ? (
           <span className="text-xs text-gray-400 flex items-center gap-1">
             <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
@@ -120,18 +167,19 @@ export default function PostContent({ description, maxLength = 300 }) {
           </select>
         )}
 
-        {/* Translated badge + revert */}
         {translatedLang && !isTranslating && (
           <span className="text-xs text-gray-400 flex items-center gap-1">
-            Translated · {translatedLang} ·{" "}
-            <button onClick={handleShowOriginal} className="underline hover:text-gray-600">
+            Translated · {langLabel} ·{" "}
+            <button
+              onClick={handleShowOriginal}
+              className="underline hover:text-gray-600"
+            >
               See original
             </button>
           </span>
         )}
       </div>
 
-      {/* Error message */}
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
     </div>
   );

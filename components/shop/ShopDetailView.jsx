@@ -28,6 +28,21 @@ import "swiper/css";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
 
+const LANGUAGES = [
+  { label: "Bengali", value: "bn" },
+  { label: "Spanish", value: "es" },
+  { label: "French", value: "fr" },
+  { label: "Arabic", value: "ar" },
+  { label: "Hindi", value: "hi" },
+  { label: "Chinese", value: "zh-CN" },
+  { label: "Japanese", value: "ja" },
+  { label: "German", value: "de" },
+  { label: "Portuguese", value: "pt" },
+  { label: "Russian", value: "ru" },
+  { label: "Italian", value: "it" },
+  { label: "Korean", value: "ko" },
+];
+
 const CONDITION_STYLES = {
   new: "bg-emerald-50 text-emerald-700 border-emerald-200",
   used_like_new: "bg-blue-50 text-blue-700 border-blue-200",
@@ -43,6 +58,61 @@ const CONDITION_LABELS = {
   used_fair: "Fair",
   used_poor: "Poor",
 };
+
+function stripHtml(html) {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.innerText || div.textContent || "";
+}
+
+function chunkText(text, maxChars = 490) {
+  const sentences = text.match(/[^.!?]+[.!?]*/g) || [text];
+  const chunks = [];
+  let current = "";
+
+  for (const sentence of sentences) {
+    if ((current + sentence).length > maxChars) {
+      if (current) chunks.push(current.trim());
+      if (sentence.length > maxChars) {
+        const words = sentence.split(" ");
+        let wordChunk = "";
+        for (const word of words) {
+          if ((wordChunk + " " + word).length > maxChars) {
+            if (wordChunk) chunks.push(wordChunk.trim());
+            wordChunk = word;
+          } else {
+            wordChunk += " " + word;
+          }
+        }
+        if (wordChunk) chunks.push(wordChunk.trim());
+        current = "";
+      } else {
+        current = sentence;
+      }
+    } else {
+      current += sentence;
+    }
+  }
+  if (current) chunks.push(current.trim());
+  return chunks;
+}
+
+async function translateChunk(chunk, targetLang) {
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=en|${targetLang}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (data.responseStatus !== 200) throw new Error("Translation failed");
+  return data.responseData.translatedText;
+}
+
+async function translateText(text, targetLang) {
+  const plainText = stripHtml(text);
+  const chunks = chunkText(plainText);
+  const results = await Promise.all(
+    chunks.map((chunk) => translateChunk(chunk, targetLang))
+  );
+  return results.join(" ");
+}
 
 async function fetchPublicDetail(slug) {
   const res = await fetch(`${BASE_URL}/marketplace/public/listings/${slug}`);
@@ -108,6 +178,10 @@ export default function ShopDetailView() {
   const [activeSlide, setActiveSlide] = useState(0);
   const [receiver, setReceiver] = useState(null);
   const [openChatDialog, setOpenChatDialog] = useState(false);
+  const [translatedContent, setTranslatedContent] = useState(null);
+  const [translatedLang, setTranslatedLang] = useState(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [error, setError] = useState(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: [`/marketplace/public/listings/${slug}`],
@@ -141,6 +215,39 @@ export default function ShopDetailView() {
       toast.error("Unable to share right now");
     }
   };
+
+  async function handleTranslate(e) {
+    const lang = e.target.value;
+    if (!lang) return;
+    e.target.value = "";
+
+    if (lang === translatedLang) {
+      setTranslatedContent(null);
+      setTranslatedLang(null);
+      return;
+    }
+
+    setIsTranslating(true);
+    setError(null);
+
+    try {
+      const result = await translateText(item?.description, lang);
+      setTranslatedContent(result);
+      setTranslatedLang(lang);
+    } catch (err) {
+      setError("Translation failed. Please try again.");
+    } finally {
+      setIsTranslating(false);
+    }
+  }
+
+  function handleShowOriginal() {
+    setTranslatedContent(null);
+    setTranslatedLang(null);
+    setError(null);
+  }
+
+  const langLabel = LANGUAGES.find((l) => l.value === translatedLang)?.label;
 
   return (
     <section className="mx-auto w-full max-w-6xl px-4 pt-24 pb-12 min-h-screen">
@@ -267,9 +374,48 @@ export default function ShopDetailView() {
               </p>
 
               {item.description && (
-                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                  {item.description}
-                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                    {translatedContent || item.description}
+                  </p>
+
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {isTranslating ? (
+                      <span className="text-xs text-gray-400 flex items-center gap-1">
+                        <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                        Translating...
+                      </span>
+                    ) : (
+                      <select
+                        onChange={handleTranslate}
+                        defaultValue=""
+                        className="text-xs border border-gray-200 rounded-md px-2 py-1 text-gray-600 bg-gray-50 cursor-pointer"
+                      >
+                        <option value="" disabled>🌐 Translate</option>
+                        {LANGUAGES.map((l) => (
+                          <option key={l.value} value={l.value}>{l.label}</option>
+                        ))}
+                      </select>
+                    )}
+
+                    {translatedLang && !isTranslating && (
+                      <span className="text-xs text-gray-400 flex items-center gap-1">
+                        Translated · {langLabel} ·{" "}
+                        <button
+                          onClick={handleShowOriginal}
+                          className="underline hover:text-gray-600"
+                        >
+                          See original
+                        </button>
+                      </span>
+                    )}
+                  </div>
+
+                  {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+                </div>
               )}
 
               <div className="space-y-2">

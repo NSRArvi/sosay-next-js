@@ -156,7 +156,7 @@ export default function UserCard({ user, type, onAction, isLoading, currentActio
         {user?.user_image ? (
           <>
             <Image
-              src={user?.user_image}
+              src={user?.user_image || user?.profile_picture}
               alt={user?.name}
               className="h-full w-full object-cover"
               height={500}

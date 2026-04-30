@@ -4,8 +4,8 @@ import { X } from "lucide-react";
 
 const SORT_OPTIONS = [
   { value: "", label: "Default" },
-  { value: "asc", label: "Price: Low to High" },
-  { value: "desc", label: "Price: High to Low" },
+  { value: "asc", label: "Low to High" },
+  { value: "desc", label: "High to Low" },
 ];
 
 export default function ActiveFilterBadges({ filters, categories, onRemove }) {

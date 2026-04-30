@@ -11,6 +11,7 @@ import {
   PlusCircle,
   LogOut,
   BriefcaseBusiness,
+  Search,
 } from "lucide-react";
 import clsx from "clsx";
 import Link from "next/link";
@@ -46,7 +47,8 @@ export default function AppSidebar({ isOpen, onClose }) {
     },
     { name: "Friends", icon: Users, href: "/app/friends" },
     { name: "Reels", icon: Video, href: "/app/reels" },
-    { name: "Spump Market", icon: Store, href: "/app/shop" },
+    { name: "Search", icon: Search, href: "/app/search" },
+    { name: "SPUMP Market", icon: Store, href: "/app/shop" },
     { name: "Add Manager", icon: BriefcaseBusiness, href: "/app/add-manager" },
     // { name: "Pages", icon: Layers, href: "/app/pages" },
     // { name: "Bookmark", icon: Bookmark, href: "/app/bookmark" },

@@ -20,15 +20,25 @@ const UserCardSkeletonList = ({ limit = 6 }) => (
 );
 
 // Tab Content Component with Infinite Scroll
-const FriendsTabContent = ({ endpoint, type, title, tabName, onTotalUpdate, showCount = true }) => {
+const FriendsTabContent = ({
+  endpoint,
+  type,
+  title,
+  tabName,
+  onTotalUpdate,
+  showCount = true,
+  count = 0,
+}) => {
   const { accessToken } = useAppContext();
   const queryClient = useQueryClient();
   const router = useRouter();
-  const [loadingState, setLoadingState] = useState({ userId: null, action: null });
+  const [loadingState, setLoadingState] = useState({
+    userId: null,
+    action: null,
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [allUsers, setAllUsers] = useState([]);
   const [pagination, setPagination] = useState({});
-  console.log(pagination);
   const [hasNextPage, setHasNextPage] = useState(true);
   const userRefsContainer = useRef(null);
   const observerRef = useRef(null);
@@ -58,7 +68,7 @@ const FriendsTabContent = ({ endpoint, type, title, tabName, onTotalUpdate, show
       }
       setPagination(data.pagination || {});
       setHasNextPage(!!data.pagination?.next_page_url);
-      
+
       // Notify parent about total count only on first page load
       if (currentPage === 1 && onTotalUpdate && showCount && tabName) {
         onTotalUpdate(tabName, data.pagination?.total || 0);
@@ -82,7 +92,11 @@ const FriendsTabContent = ({ endpoint, type, title, tabName, onTotalUpdate, show
         const threshold60Percent = Math.ceil(allUsers.length * 0.6);
 
         if (entry.isIntersecting && index >= threshold60Percent - 1) {
-          if (hasNextPage && !isFetching && currentPage < pagination.last_page) {
+          if (
+            hasNextPage &&
+            !isFetching &&
+            currentPage < pagination.last_page
+          ) {
             setCurrentPage((prev) => prev + 1);
           }
         }
@@ -91,7 +105,7 @@ const FriendsTabContent = ({ endpoint, type, title, tabName, onTotalUpdate, show
 
     observerRef.current = new IntersectionObserver(
       observerCallback,
-      observerOptions
+      observerOptions,
     );
 
     const thresholdIndex = Math.ceil(allUsers.length * 0.6) - 1;
@@ -104,7 +118,13 @@ const FriendsTabContent = ({ endpoint, type, title, tabName, onTotalUpdate, show
         observerRef.current.disconnect();
       }
     };
-  }, [allUsers.length, hasNextPage, isFetching, currentPage, pagination.last_page]);
+  }, [
+    allUsers.length,
+    hasNextPage,
+    isFetching,
+    currentPage,
+    pagination.last_page,
+  ]);
 
   const handleAction = async (userId, action) => {
     setLoadingState({ userId, action });
@@ -144,7 +164,7 @@ const FriendsTabContent = ({ endpoint, type, title, tabName, onTotalUpdate, show
               headers: {
                 Authorization: `Bearer ${accessToken}`,
               },
-            }
+            },
           );
 
           const data = await response.json();
@@ -166,7 +186,7 @@ const FriendsTabContent = ({ endpoint, type, title, tabName, onTotalUpdate, show
               headers: {
                 Authorization: `Bearer ${accessToken}`,
               },
-            }
+            },
           );
 
           const data = await response.json();
@@ -183,13 +203,16 @@ const FriendsTabContent = ({ endpoint, type, title, tabName, onTotalUpdate, show
           const formData = new FormData();
           formData.append("friend_id", userId);
 
-          const response = await fetch(`${baseUrl}/friendship/sent-friends-request/cancel`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
+          const response = await fetch(
+            `${baseUrl}/friendship/sent-friends-request/cancel`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: formData,
             },
-            body: formData,
-          });
+          );
 
           const data = await response.json();
           if (data.status === true) {
@@ -206,13 +229,16 @@ const FriendsTabContent = ({ endpoint, type, title, tabName, onTotalUpdate, show
           const formData = new FormData();
           formData.append("friend_id", userId);
 
-          const response = await fetch(`${baseUrl}/friendship/friends/unfriend`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
+          const response = await fetch(
+            `${baseUrl}/friendship/friends/unfriend`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: formData,
             },
-            body: formData,
-          });
+          );
 
           const data = await response.json();
           if (data.status === true) {
@@ -257,6 +283,20 @@ const FriendsTabContent = ({ endpoint, type, title, tabName, onTotalUpdate, show
 
   return (
     <div ref={userRefsContainer} className="space-y-6">
+      {/* Smart Count Display */}
+      {showCount && count > 0 && (
+        <p className="text-sm font-medium text-blue-900">
+          {type === "sent" &&
+            `You have sent friend request to ${count} user${count !== 1 ? "s" : ""}.`}
+          {type === "requested" &&
+            `${count} user${count !== 1 ? "s have" : " has"} sent you friend request.`}
+          {type === "friends" &&
+            `You have ${count} friend${count !== 1 ? "s" : ""}.`}
+          {type === "suggested" &&
+            `We found ${count} suggested friend${count !== 1 ? "s" : ""} for you.`}
+        </p>
+      )}
+
       <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
         {allUsers.map((user, i) => (
           <div
@@ -285,9 +325,9 @@ const FriendsTabContent = ({ endpoint, type, title, tabName, onTotalUpdate, show
 
       {/* All users loaded message */}
       {!hasNextPage && allUsers.length > 0 && (
-        <div className="text-center py-8 text-gray-500">
-          <p className="text-lg">You've seen all {title.toLowerCase()}!</p>
-        </div>
+        <p className="text-sm text-center py-8 text-gray-500" >
+          You've seen all {title.toLowerCase()}!
+        </p>
       )}
     </div>
   );
@@ -310,7 +350,7 @@ export default function FriendsPage() {
   }, []);
 
   return (
-    <section className="max-w-4xl mx-auto mt-14 md:mt-8 p-4">
+    <section className="max-w-3xl mx-auto mt-14 md:mt-8 p-4">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Friends</h1>
         <p className="text-gray-600">
@@ -318,58 +358,33 @@ export default function FriendsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="suggested" className="w-full">
+      <Tabs defaultValue="requests" className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-6 gap-2">
-          <TabsTrigger className="cursor-pointer text-xs sm:text-sm" value="suggested">
-            Suggested
-          </TabsTrigger>
-          <TabsTrigger className="cursor-pointer text-xs sm:text-sm" value="friends">
-            Friends
-            {totals.friends > 0 && (
-              <span className="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-y-px bg-green-600 rounded-full">
-                {totals.friends}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger className="cursor-pointer text-xs sm:text-sm" value="requests">
+          <TabsTrigger
+            className="cursor-pointer text-xs sm:text-sm"
+            value="requests"
+          >
             Requests
-            {totals.requests > 0 && (
-              <span className="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-y-px bg-orange-600 rounded-full">
-                {totals.requests}
-              </span>
-            )}
           </TabsTrigger>
-          <TabsTrigger className="cursor-pointer text-xs sm:text-sm" value="sent">
+          <TabsTrigger
+            className="cursor-pointer text-xs sm:text-sm"
+            value="suggested"
+          >
+            Suggestions
+          </TabsTrigger>
+          <TabsTrigger
+            className="cursor-pointer text-xs sm:text-sm"
+            value="sent"
+          >
             Sent
-            {totals.sent > 0 && (
-              <span className="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-y-px bg-purple-600 rounded-full">
-                {totals.sent}
-              </span>
-            )}
+          </TabsTrigger>
+          <TabsTrigger
+            className="cursor-pointer text-xs sm:text-sm"
+            value="friends"
+          >
+            Friends
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="suggested">
-          <FriendsTabContent
-            endpoint="/friendship/suggest-friends"
-            type="suggested"
-            title="Suggested Friends"
-            tabName="suggested"
-            onTotalUpdate={handleTotalUpdate}
-            showCount={false}
-          />
-        </TabsContent>
-
-        <TabsContent value="friends">
-          <FriendsTabContent
-            endpoint="/friendship/my-friends?status=2"
-            type="friends"
-            title="Friends"
-            tabName="friends"
-            onTotalUpdate={handleTotalUpdate}
-            showCount={true}
-          />
-        </TabsContent>
 
         <TabsContent value="requests">
           <FriendsTabContent
@@ -379,6 +394,19 @@ export default function FriendsPage() {
             tabName="requests"
             onTotalUpdate={handleTotalUpdate}
             showCount={true}
+            count={totals.requests}
+          />
+        </TabsContent>
+
+        <TabsContent value="suggested">
+          <FriendsTabContent
+            endpoint="/friendship/suggest-friends"
+            type="suggested"
+            title="Suggested Friends"
+            tabName="suggested"
+            onTotalUpdate={handleTotalUpdate}
+            showCount={false}
+            count={totals.suggested}
           />
         </TabsContent>
 
@@ -390,6 +418,19 @@ export default function FriendsPage() {
             tabName="sent"
             onTotalUpdate={handleTotalUpdate}
             showCount={true}
+            count={totals.sent}
+          />
+        </TabsContent>
+
+        <TabsContent value="friends">
+          <FriendsTabContent
+            endpoint="/friendship/my-friends?status=2"
+            type="friends"
+            title="Friends"
+            tabName="friends"
+            onTotalUpdate={handleTotalUpdate}
+            showCount={true}
+            count={totals.friends}
           />
         </TabsContent>
       </Tabs>
