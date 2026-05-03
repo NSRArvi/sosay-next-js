@@ -1,23 +1,171 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
 import { Search, X } from "lucide-react";
-import UserCard from "@/components/friends/UserCard";
+import SearchUserCard from "@/components/search/SearchUserCard";
 import UserCardSkleton from "@/components/friends/UserCardSkleton";
+import toast from "react-hot-toast";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
 
 export default function SearchPage() {
   const router = useRouter();
   const { accessToken } = useAppContext();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
+  const [loadingState, setLoadingState] = useState({
+    userId: null,
+    action: null,
+  });
   const debounceRef = useRef(null);
 
-  // Debounced search handler
+  // Add Friend Mutation
+  const addFriendMutation = useMutation({
+    mutationFn: async (formData) => {
+      const res = await fetch(`${BASE_URL}/friendship/friends`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: formData,
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.status === true) {
+        toast.success(data.message || "Friend request sent!");
+        queryClient.invalidateQueries(["search-users"]);
+      } else {
+        toast.error(data.message || "Failed to send friend request");
+      }
+    },
+    onError: () => {
+      toast.error("Failed to send friend request");
+    },
+    onSettled: () => {
+      setLoadingState({ userId: null, action: null });
+    },
+  });
+
+  // Unfriend Mutation
+  const unfriendMutation = useMutation({
+    mutationFn: async (formData) => {
+      const res = await fetch(`${BASE_URL}/friendship/friends/unfriend`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: formData,
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.status === true) {
+        toast.success(data.message || "Friend removed!");
+        queryClient.invalidateQueries(["search-users"]);
+      } else {
+        toast.error(data.message || "Failed to unfriend");
+      }
+    },
+    onError: () => {
+      toast.error("Failed to unfriend");
+    },
+    onSettled: () => {
+      setLoadingState({ userId: null, action: null });
+    },
+  });
+
+  // Cancel Friend Request Mutation
+  const cancelRequestMutation = useMutation({
+    mutationFn: async (formData) => {
+      const res = await fetch(`${BASE_URL}/friendship/sent-friends-request/cancel`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: formData,
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.status === true) {
+        toast.success(data.message || "Request cancelled!");
+        queryClient.invalidateQueries(["search-users"]);
+      } else {
+        toast.error(data.message || "Failed to cancel request");
+      }
+    },
+    onError: () => {
+      toast.error("Failed to cancel request");
+    },
+    onSettled: () => {
+      setLoadingState({ userId: null, action: null });
+    },
+  });
+
+  // Accept Friend Request Mutation
+  const acceptRequestMutation = useMutation({
+    mutationFn: async (userId) => {
+      const res = await fetch(
+        `${BASE_URL}/friendship/manage-requested-friends?friend_id=${userId}&status=2`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.status === true) {
+        toast.success(data.message || "Friend request accepted!");
+        queryClient.invalidateQueries(["search-users"]);
+      } else {
+        toast.error(data.message || "Failed to accept request");
+      }
+    },
+    onError: () => {
+      toast.error("Failed to accept request");
+    },
+    onSettled: () => {
+      setLoadingState({ userId: null, action: null });
+    },
+  });
+
+  // Reject Friend Request Mutation
+  const rejectRequestMutation = useMutation({
+    mutationFn: async (userId) => {
+      const res = await fetch(
+        `${BASE_URL}/friendship/manage-requested-friends?friend_id=${userId}&status=3`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.status === true) {
+        toast.success(data.message || "Friend request rejected!");
+        queryClient.invalidateQueries(["search-users"]);
+      } else {
+        toast.error(data.message || "Failed to reject request");
+      }
+    },
+    onError: () => {
+      toast.error("Failed to reject request");
+    },
+    onSettled: () => {
+      setLoadingState({ userId: null, action: null });
+    },
+  });
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearch(value);
@@ -52,16 +200,51 @@ export default function SearchPage() {
 
   const users = usersData?.data || [];
 
+  const handleAddFriend = async (userId) => {
+    setLoadingState({ userId, action: "add" });
+    const formData = new FormData();
+    formData.append("friend_id", userId);
+    addFriendMutation.mutate(formData);
+  };
+
+  const handleUnfriend = async (userId) => {
+    setLoadingState({ userId, action: "unfriend" });
+    const formData = new FormData();
+    formData.append("friend_id", userId);
+    unfriendMutation.mutate(formData);
+  };
+
+  const handleCancelRequest = async (userId) => {
+    setLoadingState({ userId, action: "cancel" });
+    const formData = new FormData();
+    formData.append("friend_id", userId);
+    cancelRequestMutation.mutate(formData);
+  };
+
+  const handleAcceptRequest = async (userId) => {
+    setLoadingState({ userId, action: "accept" });
+    acceptRequestMutation.mutate(userId);
+  };
+
+  const handleRejectRequest = async (userId) => {
+    setLoadingState({ userId, action: "reject" });
+    rejectRequestMutation.mutate(userId);
+  };
+
+  const handleViewProfile = (userId) => {
+    router.push(`/app/profile/${userId}`);
+  };
+
   const handleUserAction = (userId, action) => {
     if (action === "view") {
-      router.push(`/app/profile/${userId}`);
+      handleViewProfile(userId);
     }
   };
 
   return (
     <div className="min-h-screen pb-20 max-w-3xl mx-auto space-y-4 mt-14 md:mt-8 p-4">
       {/* Header */}
-      <div className="sticky top-0 z-40">
+      <div>
         <div className="max-w-7xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Search Users</h1>
 
@@ -112,7 +295,7 @@ export default function SearchPage() {
         {!isLoading && activeSearch && users.length === 0 && (
           <div className="text-center py-16">
             <p className="text-gray-500 text-lg">
-              No users found for "{activeSearch}"
+              No users found for &quot;{activeSearch}&quot;
             </p>
           </div>
         )}
@@ -125,11 +308,17 @@ export default function SearchPage() {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {users.map((user) => (
-                <UserCard
+                <SearchUserCard
                   key={user.id}
                   user={user}
-                  type="suggested"
-                  onAction={handleUserAction}
+                  onAddFriend={handleAddFriend}
+                  onUnfriend={handleUnfriend}
+                  onCancelRequest={handleCancelRequest}
+                  onAcceptRequest={handleAcceptRequest}
+                  onRejectRequest={handleRejectRequest}
+                  onViewProfile={handleViewProfile}
+                  isLoading={loadingState.userId === user.id}
+                  currentAction={loadingState.userId === user.id ? loadingState.action : null}
                 />
               ))}
             </div>

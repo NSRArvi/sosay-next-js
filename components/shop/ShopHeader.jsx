@@ -16,20 +16,20 @@ export default function ShopHeader() {
             height={60}
             className="rounded-full shrink-0"
           />
-          <div className="">
+          <div className="space-y-1">
             <h3 className="text-xl font-extrabold text-gray-900">
               Join Sosay Free
             </h3>
-            <p className="mt-1 text-sm text-gray-600">
-              List up to 3 Free Ads – Post, Sell, Replace Anytime
+            <p className="text-sm text-gray-600">
+              List up to 5 Free Ads – Post, Sell, Replace Anytime
             </p>
-            <p className="mt-3 text-sm text-gray-600">Need more listings?</p>
+            <p className="text-sm text-gray-600">Need more listings?</p>
             <p className="text-sm text-gray-600">
               Create your online shop with{" "}
               <strong style={{ color: "#F97316" }}>SPUMP</strong> and unlock
               more selling power with unlimited free ads.
             </p>
-            <div className="flex gap-3 justify-center md:justify-start mt-4">
+            <div className="flex flex-wrap gap-3 justify-center md:justify-start mt-4">
               <a
                 href="https://sosay.org"
                 target="_blank"
@@ -37,7 +37,7 @@ export default function ShopHeader() {
                 className="px-5 py-2.5 rounded-lg text-white text-sm font-semibold"
                 style={{ backgroundColor: "#2D7A4F" }}
               >
-                Post 3 Ads Free
+                Post 5 ADS Free
               </a>
               <a
                 href="https://bfinit.com/bfinit-ecomerce-platform"
@@ -54,7 +54,7 @@ export default function ShopHeader() {
       </div>
 
       <h1 className="text-3xl font-bold mb-2">
-        <span style={{ color: "#F97316" }}>Spump</span> Market
+        <span style={{ color: "#F97316" }}>Spump</span> Marketplace
       </h1>
       <p className="text-gray-600">
         Buy and sell items with your campus community. Browse the marketplace or

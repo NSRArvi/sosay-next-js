@@ -17,7 +17,7 @@ export default function CreateButtons() {
   ];
 
   return (
-    <div className="hidden md:block fixed bottom-5 right-5 z-50 group">
+    <div className="hidden lg:block fixed bottom-5 right-5 z-50 group">
       <div className="flex flex-col items-end gap-2">
         <div className="pointer-events-none translate-y-2 opacity-0 transition-all duration-300 ease-out group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100">
           <div className="flex flex-col items-end gap-2">

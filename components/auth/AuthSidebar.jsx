@@ -77,7 +77,7 @@ export default function AuthSidebar() {
         </div>
 
         {/* Brand pages */}
-        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-2">Brand pages</p>
+        {/* <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-2">Brand pages</p>
         <div className="border border-gray-100 rounded-xl p-4 flex items-start gap-3">
           <div className="w-9 h-9 rounded-xl bg-pink-50 text-pink-400 flex items-center justify-center flex-shrink-0">
             <Star className="w-4 h-4" />
@@ -93,7 +93,7 @@ export default function AuthSidebar() {
               ))}
             </div>
           </div>
-        </div>
+        </div> */}
 
       </div>
     </div>

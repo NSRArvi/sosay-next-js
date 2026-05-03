@@ -1,19 +1,15 @@
 "use client";
 import React, { useState } from "react";
 import { useAppContext } from "@/context/context";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchWithToken, postWithToken } from "@/helpers/api";
 import toast from "react-hot-toast";
 
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Plus } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { MessageCircle, Minus, Plus, X, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import Chatpanel from "@/components/message/Chatpanel";
 import UserProfilePost from "@/components/profile/UserProfilePost";
 import Lightbox from "yet-another-react-lightbox";
@@ -57,11 +53,11 @@ function ProfilePicture({ src, onClick }) {
 export default function ProfilePage() {
   const { id } = useParams();
   const { accessToken } = useAppContext();
+  const queryClient = useQueryClient();
   const [openChatDialog, setOpenChatDialog] = useState(false);
   const [receiver, setReceiver] = useState(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  
 
   // Fetch profile data
   const { data: profile, isLoading: profileDataLoading } = useQuery({
@@ -70,27 +66,76 @@ export default function ProfilePage() {
     enabled: !!accessToken,
   });
 
-  // Create post
-  const createPostMutation = useMutation({
+  // Add Friend
+  const addFriendMutation = useMutation({
     mutationFn: async (formData) => {
       return await postWithToken("/friendship/friends", formData, accessToken);
     },
     onSuccess: (data) => {
       if (data.status === true) {
         toast.success(data.message);
-        // queryClient.invalidateQueries({
-        //   queryKey: ["/feed_management/public/feed/all/post"],
-        // });
+        queryClient.invalidateQueries({
+          queryKey: [`/personal-information/${id}`, accessToken],
+        });
       } else {
         toast.error(data.message);
       }
     },
     onError: () => {
-      toast.error("Failed to create post");
+      toast.error("Failed to send friend request");
+    },
+  });
+
+  // Unfriend
+  const unfriendMutation = useMutation({
+    mutationFn: async (formData) => {
+      return await postWithToken(
+        "/friendship/friends/unfriend",
+        formData,
+        accessToken,
+      );
+    },
+    onSuccess: (data) => {
+      if (data.status === true) {
+        toast.success(data.message);
+        queryClient.invalidateQueries({
+          queryKey: [`/personal-information/${id}`, accessToken],
+        });
+      } else {
+        toast.error(data.message);
+      }
+    },
+    onError: () => {
+      toast.error("Failed to unfriend");
+    },
+  });
+
+  // Cancel Friend Request
+  const cancelFriendRequestMutation = useMutation({
+    mutationFn: async (formData) => {
+      return await postWithToken(
+        "/friendship/sent-friends-request/cancel",
+        formData,
+        accessToken,
+      );
+    },
+    onSuccess: (data) => {
+      if (data.status === true) {
+        toast.success(data.message);
+        queryClient.invalidateQueries({
+          queryKey: [`/personal-information/${id}`, accessToken],
+        });
+      } else {
+        toast.error(data.message);
+      }
+    },
+    onError: () => {
+      toast.error("Failed to cancel friend request");
     },
   });
 
   const profileData = profile?.data;
+  console.log(profileData);
   const lightboxSlides = [
     ...(profileData?.profile_cover_picture
       ? [{ src: profileData.profile_cover_picture, alt: "Cover Image" }]
@@ -105,10 +150,22 @@ export default function ProfilePage() {
     setIsLightboxOpen(true);
   };
 
-  const handleAddPost = () => {
+  const handleAddFriend = () => {
     const formData = new FormData();
     formData.append("friend_id", id);
-    createPostMutation.mutate(formData);
+    addFriendMutation.mutate(formData);
+  };
+
+  const handleUnfriend = () => {
+    const formData = new FormData();
+    formData.append("friend_id", id);
+    unfriendMutation.mutate(formData);
+  };
+
+  const handleCancelFriendRequest = () => {
+    const formData = new FormData();
+    formData.append("friend_id", id);
+    cancelFriendRequestMutation.mutate(formData);
   };
 
   return (
@@ -148,7 +205,9 @@ export default function ProfilePage() {
               <ProfilePicture
                 key={profileData?.profile_picture || "profile-picture"}
                 src={profileData?.profile_picture}
-                onClick={() => openLightbox(profileData?.profile_cover_picture ? 1 : 0)}
+                onClick={() =>
+                  openLightbox(profileData?.profile_cover_picture ? 1 : 0)
+                }
               />
             )}
           </div>
@@ -162,23 +221,63 @@ export default function ProfilePage() {
             </h1>
 
             <div className="mt-2 flex w-full flex-wrap justify-center gap-2 md:w-auto md:justify-start">
-              <Button
-                variant="outline"
-                onClick={handleAddPost}
-                disabled={createPostMutation.isPending}
-                className="w-full sm:w-auto"
-              >
-                <Plus className="mr-1 h-4 w-4" /> Add Friends
-              </Button>
-              <Button
-                onClick={() => {
-                  setOpenChatDialog(true);
-                  setReceiver(profileData);
-                }}
-                className="w-full bg-secondary hover:bg-secondary/90 sm:w-auto"
-              >
-                <MessageCircle className="mr-1 h-4 w-4" /> Send Message
-              </Button>
+              {!profileData?.friends?.is_self && (
+                <>
+                  {profileData?.friends?.is_friend ? (
+                    <Button
+                      variant="outline"
+                      onClick={handleUnfriend}
+                      disabled={unfriendMutation.isPending}
+                      className="w-full sm:w-auto"
+                    >
+                      {unfriendMutation.isPending ? (
+                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Minus className="mr-1 h-4 w-4" />
+                      )}
+                      Unfriend
+                    </Button>
+                  ) : profileData?.friends?.is_request_sent ? (
+                    <Button
+                      variant="outline"
+                      onClick={handleCancelFriendRequest}
+                      disabled={cancelFriendRequestMutation.isPending}
+                      className="w-full sm:w-auto"
+                    >
+                      {cancelFriendRequestMutation.isPending ? (
+                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                      ) : (
+                        <X className="mr-1 h-4 w-4" />
+                      )}
+                      Cancel Request
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      onClick={handleAddFriend}
+                      disabled={addFriendMutation.isPending}
+                      className="w-full sm:w-auto"
+                    >
+                      {addFriendMutation.isPending ? (
+                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Plus className="mr-1 h-4 w-4" />
+                      )}
+                      Add Friend
+                    </Button>
+                  )}
+
+                  <Button
+                    onClick={() => {
+                      setOpenChatDialog(true);
+                      setReceiver(profileData);
+                    }}
+                    className="w-full bg-secondary hover:bg-secondary/90 sm:w-auto"
+                  >
+                    <MessageCircle className="mr-1 h-4 w-4" /> Send Message
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -192,7 +291,10 @@ export default function ProfilePage() {
         <DialogContent className="h-dvh w-screen max-w-none rounded-none border-0 p-0 sm:h-[92dvh] sm:w-[96vw] sm:rounded-xl sm:border sm:max-w-4xl">
           <DialogTitle className="sr-only">Chat</DialogTitle>
           <div className="h-full overflow-hidden">
-            <Chatpanel receiver={receiver} setShowChatPanel={setOpenChatDialog} />
+            <Chatpanel
+              receiver={receiver}
+              setShowChatPanel={setOpenChatDialog}
+            />
           </div>
         </DialogContent>
       </Dialog>
