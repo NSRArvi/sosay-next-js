@@ -9,7 +9,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Package, MoreVertical, Pencil, Trash2, Tag } from "lucide-react";
+import { Package, MoreVertical, Pencil, Trash2, Tag, Eye } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const STATUS_OPTIONS = [
   { value: "active", label: "Active", style: "bg-emerald-50 text-emerald-700 border-emerald-200" },
@@ -18,6 +19,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function MyListingCard({ item, onEdit, onDelete, onStatusUpdate }) {
+  const router = useRouter();
   const thumbnail = item.images?.find((img) => img.is_thumbnail === 1) || item.images?.[0];
 
   const statusConfig = STATUS_OPTIONS.find((s) => s.value === item.status) || STATUS_OPTIONS[0];
@@ -56,11 +58,18 @@ export default function MyListingCard({ item, onEdit, onDelete, onStatusUpdate }
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44 rounded-xl">
               <DropdownMenuItem
+                onClick={() => router.push(`/shop/${item.id}`)}
+                className="cursor-pointer gap-2 text-sm"
+              >
+                <Eye className="h-3.5 w-3.5" />
+                View Ads
+              </DropdownMenuItem>
+              <DropdownMenuItem
                 onClick={() => onEdit(item)}
                 className="cursor-pointer gap-2 text-sm"
               >
                 <Pencil className="h-3.5 w-3.5" />
-                Edit Listing
+                Edit Ads
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onStatusUpdate(item)}

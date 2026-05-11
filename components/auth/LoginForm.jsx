@@ -63,7 +63,7 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 relative overflow-hidden">
+    <div className="lg:min-h-screen w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 relative overflow-hidden">
       {/* Subtle background pattern - responsive sizes */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-1/4 left-1/4 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 rounded-full bg-secondary"></div>
@@ -94,11 +94,6 @@ export default function LoginForm() {
                 width={56}
                 height={56}
                 className="rounded-full object-cover transition-transform duration-200 group-hover:scale-105"
-                style={{
-                  border: "2.5px solid #F97316",
-                  boxShadow:
-                    "0 0 0 4px rgba(249,115,22,0.12), 0 0 18px rgba(249,115,22,0.30)",
-                }}
                 onError={(e) => {
                   e.currentTarget.style.display = "none";
                   e.currentTarget.nextElementSibling.style.display = "flex";

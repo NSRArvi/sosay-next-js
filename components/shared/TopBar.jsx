@@ -12,6 +12,8 @@ import {
 import clsx from "clsx";
 import Link from "next/link";
 import { useAppContext } from "@/context/context";
+import logo from "../../app/assets/logo/logo.png";
+import Image from "next/image";
 
 export default function TopBar() {
   const { pathname } = useAppContext();
@@ -30,15 +32,17 @@ export default function TopBar() {
     { name: "Notifications", icon: Bell, href: "/app/notifications" },
   ];
 
-  const isMessageRoute = pathname?.startsWith('/app/message');
+  const isMessageRoute = pathname?.startsWith("/app/message");
 
   return (
-    <section className={clsx(
-      "flex justify-between items-center text-gray-700 fixed top-0 z-40 w-full bg-white md:bg-transparent"
-    )}>
+    <section
+      className={clsx(
+        "flex justify-between items-center text-gray-700 fixed top-0 z-40 w-full bg-white md:bg-transparent",
+      )}
+    >
       {/* brand logo  */}
-      <div className="md:w-64 px-5 py-2 bg-white">
-        <p className="font-bold text-2xl lg:text-4xl text-secondary">Sosay</p>
+      <div className="pl-2">
+        <Image src={logo} alt="Sosay Logo" width={100} height={100} />
       </div>
 
       {/* middle menus  */}
@@ -65,7 +69,7 @@ export default function TopBar() {
       </div> */}
 
       {/* right menus  */}
-      <div className="px-5 py-2 flex md:hidden justify-around gap-5">
+      <div className="px-5 py-2 flex md:hidden justify-around gap-2">
         {endItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -76,7 +80,7 @@ export default function TopBar() {
                 "flex flex-col items-center text-xs transition-all py-2 px-3 rounded-lg",
                 pathname === item.href
                   ? "text-secondary bg-blue-50"
-                  : "text-gray-500 hover:text-secondary hover:bg-gray-50"
+                  : "text-gray-500 hover:text-secondary hover:bg-gray-50",
               )}
             >
               <Icon size={24} strokeWidth={pathname === item.href ? 2.5 : 2} />

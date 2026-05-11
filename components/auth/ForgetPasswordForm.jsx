@@ -96,11 +96,6 @@ export default function ForgetPasswordForm() {
 
   return (
     <div className="flex-1 flex items-center justify-center p-8 relative">
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full bg-indigo-600"></div>
-      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -159,7 +154,7 @@ export default function ForgetPasswordForm() {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-br from-primary to-indigo-600 text-white font-semibold py-6 hover:shadow-lg hover:scale-[1.02] transition-all duration-300"
+                    className="w-full bg-secondary text-white font-semibold py-6 hover:secondary/90 transition-all duration-300"
                   >
                     {isLoading ? (
                       <>
@@ -263,7 +258,7 @@ export default function ForgetPasswordForm() {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-br from-primary to-indigo-600 text-white font-semibold py-6 hover:shadow-lg hover:scale-[1.02] transition-all duration-300"
+                    className="w-full bg-secondary text-white font-semibold py-6 hover:secondary/90 transition-all duration-300"
                   >
                     {isLoading ? (
                       <>

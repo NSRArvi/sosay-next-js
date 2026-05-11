@@ -44,14 +44,14 @@ export default function Footer() {
     <footer className="py-12 border-t border-border bg-[var(--background)] relative overflow-hidden">
       <div className="mx-5 md:container md:mx-auto relative z-10">
         {/* Logo */}
-        <div className="text-center mb-8">
+        {/* <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-[var(--foreground)] mb-2">
             <span className="text-[var(--primary)]">Sosay</span>
           </h2>
           <p className="text-[var(--muted-foreground)] text-sm max-w-md mx-auto">
             Connect, share, and discover amazing content with our dynamic social platform.
           </p>
-        </div>
+        </div> */}
 
         {/* Links */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">

@@ -115,7 +115,7 @@ export default function ReactionButton({ post, showLabel = true }) {
           >
             <CurrentIcon
               size={20}
-              className={currentReaction ? "fill-current" : ""}
+              className={currentReaction ? "fill" : "regular"}
             />
             {showLabel && (
               <span className="text-sm hidden md:block">
@@ -135,12 +135,12 @@ export default function ReactionButton({ post, showLabel = true }) {
               <button
                 key={key}
                 onClick={() => handleReaction(key)}
-                className={`p-2 rounded-full hover:scale-125 transition-transform ${color} hover:bg-gray-100`}
+                className={`p-2 rounded-full hover:scale-125 transition-transform ${color} hover:bg-gray-100 ${currentReaction === key ? "bg-gray-100" : "bg-transparent"}`}
                 disabled={reactMutation.isPending}
               >
                 <Icon
                   size={24}
-                  className={currentReaction === key ? "fill-current" : ""}
+                  className={currentReaction === key ? "fill" : "regular"}
                 />
               </button>
             ))}

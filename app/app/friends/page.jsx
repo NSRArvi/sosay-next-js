@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Users } from "lucide-react";
+import { Users, Bell, Lightbulb, Send, UserCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
 import { fetchWithToken } from "@/helpers/api";
@@ -359,34 +359,38 @@ export default function FriendsPage() {
       </div>
 
       <Tabs defaultValue="requests" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-6 gap-2">
+        <TabsList className="gap-2 bg-transparent p-0 h-auto w-auto flex-wrap mb-6">
           <TabsTrigger
-            className="cursor-pointer text-xs sm:text-sm"
             value="requests"
+            className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-red-100 dark:data-[state=active]:bg-red-900 data-[state=active]:text-red-700 dark:data-[state=active]:text-red-100 cursor-pointer"
           >
-            Requests
+            <Bell className="h-4 w-4" />
+            <span>Requests</span>
           </TabsTrigger>
           <TabsTrigger
-            className="cursor-pointer text-xs sm:text-sm"
             value="suggested"
+            className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-yellow-100 dark:data-[state=active]:bg-yellow-900 data-[state=active]:text-yellow-700 dark:data-[state=active]:text-yellow-100 cursor-pointer"
           >
-            Suggestions
+            <Lightbulb className="h-4 w-4" />
+            <span>Suggestions</span>
           </TabsTrigger>
           <TabsTrigger
-            className="cursor-pointer text-xs sm:text-sm"
             value="sent"
+            className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-blue-100 dark:data-[state=active]:bg-blue-900 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-100 cursor-pointer"
           >
-            Sent
+            <Send className="h-4 w-4" />
+            <span>Sent</span>
           </TabsTrigger>
           <TabsTrigger
-            className="cursor-pointer text-xs sm:text-sm"
             value="friends"
+            className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-green-100 dark:data-[state=active]:bg-green-900 data-[state=active]:text-green-700 dark:data-[state=active]:text-green-100 cursor-pointer"
           >
-            Friends
+            <UserCheck className="h-4 w-4" />
+            <span>Friends</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="requests">
+        <TabsContent value="requests" className="space-y-6">
           <FriendsTabContent
             endpoint="/friendship/requested-friends"
             type="requested"
@@ -398,7 +402,7 @@ export default function FriendsPage() {
           />
         </TabsContent>
 
-        <TabsContent value="suggested">
+        <TabsContent value="suggested" className="space-y-6">
           <FriendsTabContent
             endpoint="/friendship/suggest-friends"
             type="suggested"
@@ -410,7 +414,7 @@ export default function FriendsPage() {
           />
         </TabsContent>
 
-        <TabsContent value="sent">
+        <TabsContent value="sent" className="space-y-6">
           <FriendsTabContent
             endpoint="/friendship/sent-friends-request"
             type="sent"
@@ -422,7 +426,7 @@ export default function FriendsPage() {
           />
         </TabsContent>
 
-        <TabsContent value="friends">
+        <TabsContent value="friends" className="space-y-6">
           <FriendsTabContent
             endpoint="/friendship/my-friends?status=2"
             type="friends"

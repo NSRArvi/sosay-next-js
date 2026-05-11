@@ -1,8 +1,10 @@
 "use client";
 import { Menu, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useState } from "react";
+import logo from "../../app/assets/logo/logo.png";
 
 export default function Navbar() {
   const [view, setView] = useState(false);
@@ -19,7 +21,7 @@ export default function Navbar() {
   return (
     <section>
       {/* Fixed Navbar */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border">
+      <div className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-border">
         <div className="flex justify-between items-center mx-5 md:container md:mx-auto py-4">
           {/* Mobile Menu Button */}
           <Menu
@@ -29,9 +31,7 @@ export default function Navbar() {
 
           {/* Logo */}
           <div className="flex gap-2 items-center">
-            <div className="text-2xl lg:text-3xl font-bold text-foreground">
-              <span className="text-destructive">Sosay</span>
-            </div>
+            <Image src={logo} alt="Sosay Logo" width={100} height={100} />
           </div>
 
           {/* Desktop Navigation Menu */}

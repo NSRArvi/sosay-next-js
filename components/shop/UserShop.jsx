@@ -83,7 +83,7 @@ export default function UserShop() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-gray-800">My Listings</h2>
+          <h2 className="text-lg font-bold text-gray-800">My Ads</h2>
           <p className="text-xs text-gray-400 mt-0.5">
             {listings.length} item{listings.length !== 1 ? "s" : ""} listed
           </p>
@@ -99,7 +99,7 @@ export default function UserShop() {
 
       {/* Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(6)].map((_, i) => (
             <ListingCardSkeleton key={i} />
           ))}
@@ -127,7 +127,7 @@ export default function UserShop() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {listings.map((item) => (
             <MyListingCard
               key={item.id}

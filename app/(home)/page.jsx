@@ -6,7 +6,7 @@ import AuthSidebar from "@/components/auth/AuthSidebar";
 export default function Login() {
   return (
     <PublicRoute>
-      <section className="min-h-screen flex flex-col md:flex-row bg-gray-50 text-gray-800 pt-16">
+      <section className="min-h-screen flex flex-col md:flex-row bg-gray-50 text-gray-800 pt-20">
         {/* Left Column - Features */}
         <AuthSidebar/>
 

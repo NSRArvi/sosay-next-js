@@ -20,6 +20,7 @@ import { postWithToken } from "@/helpers/api";
 import { toast } from "react-hot-toast";
 
 export default function PostCard({ post }) {
+  // console.log(post);
   const queryClient = useQueryClient();
   const { accessToken, userInfo } = useAppContext();
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import {
@@ -64,12 +64,31 @@ export default function PublicMarketplace() {
   const [page, setPage] = useState(1);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [showListingAuthDialog, setShowListingAuthDialog] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(() => {
     if (hasShownInitialCategoryDialog) return false;
     hasShownInitialCategoryDialog = true;
     return true;
   });
   const debounceRef = useRef(null);
+
+  // Hide category modal on mobile screens
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Close category picker on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setCategoryPickerOpen(false);
+    }
+  }, [isMobile]);
 
   const EMPTY_FILTERS = {
     category_id: "",
@@ -358,13 +377,15 @@ export default function PublicMarketplace() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <CategoryDialog
-        open={categoryPickerOpen}
-        onOpenChange={setCategoryPickerOpen}
-        categoriesLoading={categoriesLoading}
-        categories={categories}
-        onSelect={handleInitialCategorySelect}
-      />
+      {!isMobile && (
+        <CategoryDialog
+          open={categoryPickerOpen}
+          onOpenChange={setCategoryPickerOpen}
+          categoriesLoading={categoriesLoading}
+          categories={categories}
+          onSelect={handleInitialCategorySelect}
+        />
+      )}
 
       {/* <div className="absolute top-0 -right-0 hidden lg:block">
         <ShopSidebar />
