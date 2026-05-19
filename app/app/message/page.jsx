@@ -5,17 +5,31 @@ import Chatpanel from "@/components/message/Chatpanel";
 import { useQuery } from "@tanstack/react-query";
 import { useAppContext } from "@/context/context";
 import { fetchWithToken } from "@/helpers/api";
+import whatsapp from "../../assets/whatsapp.png";
 
 export default function Page() {
-  const { accessToken } = useAppContext();
+  const { accessToken, userInfo } = useAppContext();
   const [receiver, setReceiver] = useState(null);
   const [showChatPanel, setShowChatPanel] = useState(false);
 
+  // fetch chat history
   const { data: chatHistory, isLoading: chatHistoryLoading } = useQuery({
     queryKey: ["/chat/inbox", accessToken],
     queryFn: fetchWithToken,
     enabled: !!accessToken,
   });
+
+  //check whatsapp exist or not
+  const { data: whatsappData } = useQuery({
+    queryKey: [
+      `/chat/check-if-whatsapp-contact-exist/${userInfo?.id}`,
+      accessToken,
+    ],
+    queryFn: fetchWithToken,
+    enabled: !!accessToken,
+  });
+
+  const whatsAppInfo = whatsappData?.data;
 
   const defaultReceiver = useMemo(() => {
     const chats = chatHistory?.data || [];
@@ -37,33 +51,40 @@ export default function Page() {
       <div className="hidden lg:flex gap-8 h-full">
         <div className="lg:w-2/5 h-full overflow-hidden">
           <ChatHistory
+            whatsAppInfo={whatsAppInfo}
             setReceiver={setReceiver}
             receiver={desktopReceiver}
             setShowChatPanel={setShowChatPanel}
             chatHistoryData={chatHistory}
             chatHistoryLoading={chatHistoryLoading}
             onSelectChat={handleSelectChat}
+            whatsapp={whatsapp}
           />
         </div>
 
         <div className="lg:w-3/5 h-full overflow-hidden">
-          <Chatpanel receiver={desktopReceiver} />
+          <Chatpanel receiver={desktopReceiver} whatsapp={whatsapp} />
         </div>
       </div>
 
       <div className="lg:hidden h-full overflow-hidden">
         <ChatHistory
+          whatsAppInfo={whatsAppInfo}
           setReceiver={setReceiver}
           receiver={mobileReceiver}
           setShowChatPanel={setShowChatPanel}
           chatHistoryData={chatHistory}
           chatHistoryLoading={chatHistoryLoading}
           onSelectChat={handleSelectChat}
+          whatsapp={whatsapp}
         />
 
         {isMobileChatPanelOpen && mobileReceiver && (
           <div className="fixed inset-0 z-50 bg-background lg:hidden">
-            <Chatpanel receiver={mobileReceiver} setShowChatPanel={setShowChatPanel} />
+            <Chatpanel
+              receiver={mobileReceiver}
+              setShowChatPanel={setShowChatPanel} whatsapp={whatsapp}
+            />
           </div>
         )}
       </div>

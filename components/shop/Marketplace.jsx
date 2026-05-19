@@ -77,6 +77,7 @@ export default function Marketplace() {
 
   const EMPTY_FILTERS = {
     category_id: "",
+    country_id: "",
     min_price: "",
     max_price: "",
     sort_by_price: "",
@@ -98,6 +99,20 @@ export default function Marketplace() {
     staleTime: 1000 * 60 * 5,
   });
   const categories = categoriesData?.data || [];
+
+  // Fetch countries
+  const { data: countriesData, isLoading: countriesLoading } = useQuery({
+    queryKey: ["/countries", accessToken],
+    queryFn: async () => {
+      const res = await fetch(`${BASE_URL}/countries`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      return res.json();
+    },
+    enabled: !!accessToken,
+    staleTime: 1000 * 60 * 60,
+  });
+  const countries = countriesData?.data || [];
 
   const handleInitialCategorySelect = (categoryId) => {
     setFilters((prev) => ({ ...prev, category_id: String(categoryId) }));
@@ -138,6 +153,7 @@ export default function Marketplace() {
   if (filters.min_price) qs.set("min_price", filters.min_price);
   if (filters.max_price) qs.set("max_price", filters.max_price);
   if (filters.sort_by_price) qs.set("sort_by_price", filters.sort_by_price);
+  if (filters.country_id) qs.set("country_id", filters.country_id);
 
   const { data, isLoading } = useQuery({
     queryKey: [`/marketplace/listings?${qs.toString()}`, accessToken],
@@ -255,6 +271,22 @@ export default function Marketplace() {
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={filters.country_id}
+              onChange={(e) => {
+                setFilters((p) => ({ ...p, country_id: e.target.value }));
+                setPage(1);
+              }}
+              disabled={countriesLoading}
+              className="ml-3 text-xs text-gray-600 border-none bg-transparent focus:outline-none cursor-pointer"
+            >
+              <option value="">All countries</option>
+              {countries.map((c) => (
+                <option key={c.id} value={String(c.id)}>
+                  {c.name}
                 </option>
               ))}
             </select>

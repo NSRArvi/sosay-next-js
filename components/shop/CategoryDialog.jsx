@@ -25,7 +25,7 @@ export default function CategoryDialog({
           </DialogHeader>
 
           {categoriesLoading ? (
-            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
               {Array.from({ length: 10 }).map((_, idx) => (
                 <div
                   key={idx}
@@ -44,7 +44,7 @@ export default function CategoryDialog({
               No categories available right now.
             </div>
           ) : (
-            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {categories.map((category) => (
                 <div
                   key={category.id}
@@ -55,7 +55,7 @@ export default function CategoryDialog({
                     onClick={() => onSelect(category.id)}
                     className="block w-full"
                   >
-                    <div className="relative aspect-video w-full overflow-hidden">
+                    <div className="relative h-[100px] w-full overflow-hidden">
                       <Image
                         src={category.icon}
                         alt={category.name}

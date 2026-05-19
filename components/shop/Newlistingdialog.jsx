@@ -19,8 +19,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
 const CONDITION_OPTIONS = [
   { value: "new", label: "New" },
   { value: "used_like_new", label: "Like New" },
-  { value: "used_good", label: "Good" },
-  { value: "used_fair", label: "Fair" },
+  { value: "refurbished", label: "Refurbished" },
+  { value: "used", label: "Used" },
+  { value: "repair", label: "Repair" },
+  // { value: "used_good", label: "Good" },
+  // { value: "used_fair", label: "Fair" },
 ];
 
 const INITIAL_FORM = {

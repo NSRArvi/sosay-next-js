@@ -47,6 +47,10 @@
 :root {
   --radius: 0.625rem;
 
+  /* Fallback font variables for Geist (used where next/font was previously used) */
+  --font-geist-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono", "Helvetica Neue", monospace;
+
   /* Light Mode: bright and clean with red-blue vibe */ /* soft white with subtle tint */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);

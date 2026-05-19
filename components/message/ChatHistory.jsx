@@ -1,12 +1,23 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useAppContext } from "@/context/context";
-import { fetchWithToken } from "@/helpers/api";
+import { fetchWithToken, postWithToken } from "@/helpers/api";
 import ChatSearch from "./ChatSearch";
 import { useState } from "react";
 import ChatCardSkeleton from "./ChatCardSkeleton";
 import ChatCard from "./ChatCard";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export default function ChatHistory({
+  whatsapp,
+  whatsAppInfo,
   setReceiver,
   receiver,
   setShowChatPanel,
@@ -14,20 +25,46 @@ export default function ChatHistory({
   chatHistoryLoading,
   onSelectChat,
 }) {
-  const { accessToken } = useAppContext();
+  const { accessToken, userInfo } = useAppContext();
+  const queryClient = useQueryClient();
   const [isSearching, setIsSearching] = useState(false);
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [whatsappNumber, setWhatsappNumber] = useState("");
 
-  // Fetch chat history
-  const { data: fallbackChatHistory, isLoading: fallbackChatHistoryLoading } = useQuery({
-    queryKey: ["/chat/inbox", accessToken],
-    queryFn: fetchWithToken,
-    enabled: !!accessToken && !chatHistoryData,
+  const saveWhatsappMutation = useMutation({
+    mutationFn: (formData) =>
+      postWithToken("/chat/save-whatsapp-contact", formData, accessToken),
+    onSuccess: () => {
+      setIsWhatsAppModalOpen(false);
+      queryClient.invalidateQueries([
+        `/chat/check-if-whatsapp-contact-exist/${userInfo?.id}`,
+      ]);
+    },
+    onError: (error) => {
+      console.error("Failed to save WhatsApp number", error);
+    },
   });
 
+  const handleSaveWhatsapp = () => {
+    if (!whatsappNumber) return;
+    const formData = new FormData();
+    formData.append("whatsapp_number", whatsappNumber);
+    saveWhatsappMutation.mutate(formData);
+  };
+
+  // Fetch chat history
+  const { data: fallbackChatHistory, isLoading: fallbackChatHistoryLoading } =
+    useQuery({
+      queryKey: ["/chat/inbox", accessToken],
+      queryFn: fetchWithToken,
+      enabled: !!accessToken && !chatHistoryData,
+    });
+
   const chatHistory = chatHistoryData || fallbackChatHistory;
-  const isLoading = typeof chatHistoryLoading === "boolean"
-    ? chatHistoryLoading
-    : fallbackChatHistoryLoading;
+  const isLoading =
+    typeof chatHistoryLoading === "boolean"
+      ? chatHistoryLoading
+      : fallbackChatHistoryLoading;
 
   const handleSelectChat = (chat) => {
     if (onSelectChat) {
@@ -42,12 +79,40 @@ export default function ChatHistory({
   return (
     <section className="flex flex-col h-full">
       {/* Header — hidden on mobile when searching */}
-      <div className={`mb-4 md:mb-8 ${isSearching ? "hidden" : "block"}`}>
-        <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">Messages</h1>
-        <p className="text-sm md:text-base text-gray-600">
-          Chat with your friends and stay connected
-        </p>
+      <div
+        className={`mb-4 md:mb-8 flex items-center justify-between ${isSearching ? "hidden" : "block"}`}
+      >
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">
+            Messages
+          </h1>
+          <p className="text-sm md:text-base text-gray-600">
+            Chat with your friends and stay connected
+          </p>
+        </div>
+        <Image onClick={() => setIsWhatsAppModalOpen(true)} src={whatsapp} alt="WhatsApp" height={40} width={40} />
       </div>
+
+      <Dialog open={isWhatsAppModalOpen} onOpenChange={setIsWhatsAppModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Manage WhatsApp</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 mt-4">
+            <Input
+              placeholder="e.g. 31098765480"
+              value={whatsappNumber || whatsAppInfo}
+              onChange={(e) => setWhatsappNumber(e.target.value)}
+            />
+            <Button
+              onClick={handleSaveWhatsapp}
+              disabled={saveWhatsappMutation.isLoading || !whatsappNumber}
+            >
+              {saveWhatsappMutation.isLoading ? "Saving..." : "Save"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <ChatSearch
         isSearching={isSearching}

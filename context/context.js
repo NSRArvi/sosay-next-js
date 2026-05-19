@@ -15,6 +15,7 @@ export const AppProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(null);
   const [isUserVerified, setIsUserVerified] = useState(false);
   const [verificationInfo, setVerificationInfo] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const { data: countriesData, isLoading: countriesLoading } = useQuery({
     queryKey: ["/countries"],
@@ -87,8 +88,10 @@ export const AppProvider = ({ children }) => {
         verificationInfo,
         countries,
         countriesLoading,
+        uploadProgress,
         setUserInfo: updateUserInfo,
         setAccessToken: updateAccessToken,
+        setUploadProgress,
         logout,
       }}
     >

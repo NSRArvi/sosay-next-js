@@ -7,11 +7,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Paperclip, X, Download, Smile } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
 import { EMOJI_CATEGORIES, ALL_EMOJIS } from "./Emojidata";
+import { fetchWithToken } from "@/helpers/api";
+import Link from "next/link";
+import Image from "next/image";
 
 // ─── EmojiPicker Component ─────────────────────────────────────────────────
 function EmojiPicker({ onSelect, onClose, pickerRef }) {
@@ -24,11 +27,12 @@ function EmojiPicker({ onSelect, onClose, pickerRef }) {
     ? (() => {
         const terms = search.trim().toLowerCase().split(/\s+/);
         return ALL_EMOJIS.filter(({ keywords, category }) =>
-          terms.every((term) =>
-            category.toLowerCase().includes(term) ||
-            keywords.includes(term) ||
-            keywords.split(/\s+/).some((word) => word.startsWith(term))
-          )
+          terms.every(
+            (term) =>
+              category.toLowerCase().includes(term) ||
+              keywords.includes(term) ||
+              keywords.split(/\s+/).some((word) => word.startsWith(term)),
+          ),
         );
       })()
     : null;
@@ -79,19 +83,21 @@ function EmojiPicker({ onSelect, onClose, pickerRef }) {
         {filtered ? (
           // Search results
           filtered.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-6">No emoji found</p>
+            <p className="text-xs text-muted-foreground text-center py-6">
+              No emoji found
+            </p>
           ) : (
-          <div className="grid grid-cols-10 gap-0.5">
-            {filtered.map(({ emoji }, i) => (
-              <button
-                key={i}
-                onClick={() => onSelect(emoji)}
-                className="text-xl w-7 h-7 flex items-center justify-center rounded hover:bg-muted transition-colors"
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
+            <div className="grid grid-cols-10 gap-0.5">
+              {filtered.map(({ emoji }, i) => (
+                <button
+                  key={i}
+                  onClick={() => onSelect(emoji)}
+                  className="text-xl w-7 h-7 flex items-center justify-center rounded hover:bg-muted transition-colors"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
           )
         ) : (
           // Categorised view
@@ -135,14 +141,15 @@ const echo = new Echo({
 });
 
 // ─── Chatpanel ─────────────────────────────────────────────────────────────
-export default function Chatpanel({ receiver, setShowChatPanel }) {
+export default function Chatpanel({ receiver, setShowChatPanel, whatsapp }) {
   const { accessToken, userInfo } = useAppContext();
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedImagePreview, setSelectedImagePreview] = useState("");
-  const [isSelectedPreviewLoading, setIsSelectedPreviewLoading] = useState(false);
+  const [isSelectedPreviewLoading, setIsSelectedPreviewLoading] =
+    useState(false);
   const [loadedMessageImages, setLoadedMessageImages] = useState({});
   const [isSending, setIsSending] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -154,7 +161,18 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
   const emojiPickerRef = useRef(null);
   const emojiButtonRef = useRef(null);
   const queryClient = useQueryClient();
-  
+
+  //check whatsapp exist or not
+  const { data: whatsappData } = useQuery({
+    queryKey: [
+      `/chat/check-if-whatsapp-contact-exist/${receiver?.user_id}`,
+      accessToken,
+    ],
+    queryFn: fetchWithToken,
+    enabled: !!accessToken,
+  });
+
+  const whatsAppInfo = whatsappData?.data;
 
   // ── Close picker on outside click ──────────────────────────────────────
   useEffect(() => {
@@ -208,7 +226,7 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
               "Content-Type": "application/json",
             },
             signal: controller.signal,
-          }
+          },
         );
 
         const data = await response.json();
@@ -220,12 +238,17 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
         }
 
         const formattedHistory = messages.map((msg) => ({
-          text: typeof msg.message === "string" ? msg.message : (msg.message?.message || "Message"),
+          text:
+            typeof msg.message === "string"
+              ? msg.message
+              : msg.message?.message || "Message",
           sender: msg.sender_id == userInfo.id ? "Me" : "Them",
           timestamp: msg.created_at,
           isFile: msg.is_file === 1 || msg.is_file === true,
           fileUrl: msg.is_file
-            ? (typeof msg.message === "string" ? msg.message : msg.message?.message || null)
+            ? typeof msg.message === "string"
+              ? msg.message
+              : msg.message?.message || null
             : null,
         }));
 
@@ -244,7 +267,10 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
 
     channel.listen(".message.sent", (e) => {
       console.log("Real-time Message received:", e);
-      const messageText = typeof e.message === "string" ? e.message : (e.message?.message || "Message");
+      const messageText =
+        typeof e.message === "string"
+          ? e.message
+          : e.message?.message || "Message";
       setChatHistory((prev) => [
         ...prev,
         {
@@ -298,7 +324,8 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
   const isImageFile = (fileUrl) => {
     if (!fileUrl) return false;
     const normalized = String(fileUrl).toLowerCase();
-    if (normalized.startsWith("blob:") || normalized.startsWith("data:image/")) return true;
+    if (normalized.startsWith("blob:") || normalized.startsWith("data:image/"))
+      return true;
     const cleanUrl = normalized.split("?")[0].split("#")[0];
     return /\.(png|jpe?g|gif|webp|bmp|svg|avif|heic|heif)$/.test(cleanUrl);
   };
@@ -384,8 +411,10 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
           if (fileUrl) {
             setChatHistory((prev) =>
               prev.map((msg, idx) =>
-                idx === prev.length - 1 ? { ...msg, text: fileUrl, fileUrl } : msg
-              )
+                idx === prev.length - 1
+                  ? { ...msg, text: fileUrl, fileUrl }
+                  : msg,
+              ),
             );
           }
         }
@@ -405,7 +434,12 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
   };
 
   const getInitials = (name) =>
-    name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+    name
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
 
   return (
     <section className="w-full h-full">
@@ -413,7 +447,10 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
         <div className="flex h-full flex-col bg-card shadow-sm sm:rounded-xl lg:h-[calc(100dvh-90px)]">
           {/* Chat Header */}
           <div className="border-b bg-card px-3 py-3 sm:px-4 flex items-center gap-3 sm:rounded-t-xl">
-            <button className="lg:hidden" onClick={() => setShowChatPanel(false)}>
+            <button
+              className="lg:hidden"
+              onClick={() => setShowChatPanel(false)}
+            >
               <ArrowLeft className="text-gray-400" />
             </button>
             <Avatar className="h-10 w-10">
@@ -423,7 +460,9 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <h2 className="truncate font-semibold text-base sm:text-lg">{receiver?.name}</h2>
+              <h2 className="truncate font-semibold text-base sm:text-lg">
+                {receiver?.name}
+              </h2>
               <p className="text-xs text-muted-foreground">
                 {receiver?.is_online ? (
                   "Active now"
@@ -433,6 +472,21 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                   </span>
                 )}
               </p>
+            </div>
+            <div>
+              {whatsAppInfo && (
+                <Link
+                  href={`https://wa.me/${typeof whatsAppInfo === "object" ? whatsAppInfo?.whatsapp_number : whatsAppInfo}`.replace(
+                    /"/g,
+                    "",
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0"
+                >
+                  <Image src={whatsapp} alt="WhatsApp" height={35} width={35} />
+                </Link>
+              )}
             </div>
           </div>
 
@@ -444,10 +498,12 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
               </div>
             ) : chatHistory.length === 0 ? (
               <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
+                <p className="text-muted-foreground">
+                  No messages yet. Start the conversation!
+                </p>
               </div>
             ) : (
-              chatHistory.map((msg, index) => (
+              chatHistory.map((msg, index) =>
                 (() => {
                   const fileUrl = msg.fileUrl || msg.text;
                   const isImageMessage = msg.isFile && isImageFile(fileUrl);
@@ -487,7 +543,9 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                                   sizes="(max-width: 768px) 80vw, 320px"
                                   className="object-contain"
                                   onLoad={() => markMessageImageLoaded(fileUrl)}
-                                  onError={() => markMessageImageLoaded(fileUrl)}
+                                  onError={() =>
+                                    markMessageImageLoaded(fileUrl)
+                                  }
                                 />
                               </div>
                             </button>
@@ -542,8 +600,8 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                       </div>
                     </div>
                   );
-                })()
-              ))
+                })(),
+              )
             )}
             <div ref={messagesEndRef} />
           </div>
@@ -571,8 +629,15 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                       />
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="max-w-[58vw] sm:max-w-[220px] text-sm truncate">{selectedFile.name}</span>
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={removeSelectedFile}>
+                      <span className="max-w-[58vw] sm:max-w-[220px] text-sm truncate">
+                        {selectedFile.name}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={removeSelectedFile}
+                      >
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
@@ -581,12 +646,19 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Paperclip className="h-4 w-4" />
-                      <span className="max-w-[48vw] sm:max-w-[200px] text-sm truncate">{selectedFile.name}</span>
+                      <span className="max-w-[48vw] sm:max-w-[200px] text-sm truncate">
+                        {selectedFile.name}
+                      </span>
                       <span className="text-xs text-muted-foreground">
                         ({(selectedFile.size / 1024).toFixed(2)} KB)
                       </span>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={removeSelectedFile}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={removeSelectedFile}
+                    >
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
@@ -595,6 +667,19 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
             )}
 
             <div className="relative flex items-center gap-2">
+              {whatsAppInfo && (
+                <Link
+                  href={`https://wa.me/${typeof whatsAppInfo === "object" ? whatsAppInfo?.whatsapp_number : whatsAppInfo}`.replace(
+                    /"/g,
+                    "",
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0"
+                >
+                  <Image src={whatsapp} alt="WhatsApp" height={35} width={35} />
+                </Link>
+              )}
               {/* Emoji Picker Popup */}
               {showEmojiPicker && (
                 <EmojiPicker
@@ -640,9 +725,15 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
                 type="text"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder={selectedFile ? "Add a caption (optional)..." : "Type a message…"}
+                placeholder={
+                  selectedFile
+                    ? "Add a caption (optional)..."
+                    : "Type a message…"
+                }
                 className="flex-1"
-                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && !e.shiftKey && sendMessage()
+                }
                 disabled={isSending}
               />
 
@@ -664,7 +755,9 @@ export default function Chatpanel({ receiver, setShowChatPanel }) {
         </div>
       ) : (
         <div className="flex flex-1 items-center justify-center h-full lg:h-[calc(100dvh-90px)] bg-card rounded-xl shadow-sm">
-          <p className="text-muted-foreground">Select a chat to start messaging</p>
+          <p className="text-muted-foreground">
+            Select a chat to start messaging
+          </p>
         </div>
       )}
 
