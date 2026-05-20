@@ -49,11 +49,11 @@ export default function AppSidebar({ isOpen, onClose }) {
     { name: "Reels", icon: Video, href: "/app/reels" },
     { name: "Search", icon: Search, href: "/app/search" },
     { name: "SPUMP Market", icon: Store, href: "/app/shop" },
-    { name: "Add Manager", icon: BriefcaseBusiness, href: "/app/add-manager" },
+    { name: "Ads Manager", icon: BriefcaseBusiness, href: "/app/ads-manager" },
     // { name: "Pages", icon: Layers, href: "/app/pages" },
     // { name: "Bookmark", icon: Bookmark, href: "/app/bookmark" },
     // { name: "Notifications", icon: Bell, href: "/app/notifications" },
-    // { name: "Settings", icon: Settings, href: "/app/settings" },
+    { name: "Settings", icon: Settings, href: "/app/settings" },
   ];
   return (
     <>
