@@ -68,8 +68,8 @@ export default function AppSidebar({ isOpen, onClose }) {
       <aside
         className={clsx(
           "fixed h-screen w-64 bg-white text-gray-800 z-99 md:z-50 flex flex-col transition-transform duration-300",
-          isOpen ? "translate-x-0 top-0" : "-translate-x-full top-14",
-          "md:translate-x-0 md:top-14 md:h-[calc(100vh-3.5rem)]",
+          isOpen ? "translate-x-0" : "-translate-x-full",
+          "md:translate-x-0 md:h-[calc(100vh-3.5rem)]",
         )}
       >
         {/* User Profile Section */}

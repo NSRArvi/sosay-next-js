@@ -26,6 +26,15 @@ const CONDITION_OPTIONS = [
   // { value: "used_fair", label: "Fair" },
 ];
 
+// Common ISO 4217 currency codes
+const CURRENCY_CODES = [
+  "USD","EUR","GBP","JPY","CAD","AUD","NZD","CHF","CNY","HKD",
+  "SGD","INR","PKR","BDT","AED","SAR","TRY","RUB","BRL","NGN",
+  "ZAR","KES","EGP","MXN","ARS","CLP","COP","IDR","THB","VND",
+  "KRW","MYR","PHP","ILS","PLN","HUF","CZK","DKK","SEK","NOK",
+  "RON","UAH","KZT",
+];
+
 const INITIAL_FORM = {
   title: "",
   description: "",
@@ -263,8 +272,11 @@ export function NewListingDialog({ open, onClose, onSuccess }) {
                   onChange={handleChange}
                   className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-secondary/50 bg-white transition"
                 >
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
+                  {CURRENCY_CODES.map((code) => (
+                    <option key={code} value={code}>
+                      {code}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-1 flex-1">

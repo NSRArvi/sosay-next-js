@@ -7,6 +7,7 @@ import { useAppContext } from "@/context/context";
 import { fetchWithToken } from "@/helpers/api";
 import PostCardSkeletonList from "@/components/feed/PostCardSkletonList";
 import { ChevronUp } from "lucide-react";
+import SuggestionList from "@/components/feed/SuggestionList";
 
 export default function FeedPage() {
   const { accessToken } = useAppContext();
@@ -135,6 +136,8 @@ export default function FeedPage() {
           Latest insights and updates from your connections.
         </p>
       </div>
+
+      <SuggestionList/>
 
       <div>
         {allPosts.length === 0 && !isLoading ? (

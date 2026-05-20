@@ -4,6 +4,7 @@ import { useAppContext } from "@/context/context";
 import { fetchWithToken } from "@/helpers/api";
 import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { List, Plus } from "lucide-react";
 import MyCampaignsList from "@/components/ads/MyCampaignsList";
 import CreateCampaignForm from "@/components/ads/CreateCampaignForm";
 
@@ -43,9 +44,15 @@ export default function AddManagerPage() {
       </div>
 
       <Tabs defaultValue="campaigns" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="campaigns">My Campaigns</TabsTrigger>
-          <TabsTrigger value="create">Create Campaign</TabsTrigger>
+        <TabsList className="mb-6 gap-2 p-0 bg-transparent">
+          <TabsTrigger value="campaigns" className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900">
+            <List className="h-5 w-5" />
+            <span>My Campaigns</span>
+          </TabsTrigger>
+          <TabsTrigger value="create" className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900">
+            <Plus className="h-5 w-5" />
+            <span>Create Campaign</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* My Campaigns Tab */}

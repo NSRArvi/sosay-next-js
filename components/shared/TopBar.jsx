@@ -37,7 +37,7 @@ export default function TopBar() {
   return (
     <section
       className={clsx(
-        "flex justify-between items-center text-gray-700 fixed top-0 z-40 w-full bg-white md:bg-transparent",
+        "flex justify-between items-center text-gray-700 fixed top-0 z-40 w-full bg-white md:hidden",
       )}
     >
       {/* brand logo  */}
@@ -69,7 +69,7 @@ export default function TopBar() {
       </div> */}
 
       {/* right menus  */}
-      <div className="px-5 py-2 flex md:hidden justify-around gap-2">
+      <div className="px-5 py-2 flex justify-around gap-2">
         {endItems.map((item) => {
           const Icon = item.icon;
           return (
