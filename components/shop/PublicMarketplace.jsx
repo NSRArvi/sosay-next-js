@@ -92,6 +92,7 @@ export default function PublicMarketplace() {
 
   const EMPTY_FILTERS = {
     category_id: "",
+    country_id: "",
     min_price: "",
     max_price: "",
     sort_by_price: "",
@@ -107,6 +108,14 @@ export default function PublicMarketplace() {
     staleTime: 1000 * 60 * 5,
   });
   const categories = categoriesData?.data || [];
+
+  // Fetch countries (public)
+  const { data: countriesData, isLoading: countriesLoading } = useQuery({
+    queryKey: [`${BASE_URL}/countries`],
+    queryFn: () => fetchPublic(`/countries`),
+    staleTime: 1000 * 60 * 60,
+  });
+  const countries = countriesData?.data || [];
 
   const handleInitialCategorySelect = (categoryId) => {
     setFilters((prev) => ({ ...prev, category_id: String(categoryId) }));
@@ -147,6 +156,7 @@ export default function PublicMarketplace() {
   if (filters.min_price) qs.set("min_price", filters.min_price);
   if (filters.max_price) qs.set("max_price", filters.max_price);
   if (filters.sort_by_price) qs.set("sort_by_price", filters.sort_by_price);
+  if (filters.country_id) qs.set("country_id", filters.country_id);
 
   // Fetch listings (public)
   const { data, isLoading } = useQuery({
@@ -286,6 +296,22 @@ export default function PublicMarketplace() {
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={filters.country_id}
+              onChange={(e) => {
+                setFilters((p) => ({ ...p, country_id: e.target.value }));
+                setPage(1);
+              }}
+              disabled={countriesLoading}
+              className="ml-3 text-xs text-gray-600 border-none bg-transparent focus:outline-none cursor-pointer"
+            >
+              <option value="">All countries</option>
+              {countries.map((c) => (
+                <option key={c.id} value={String(c.id)}>
+                  {c.name}
                 </option>
               ))}
             </select>

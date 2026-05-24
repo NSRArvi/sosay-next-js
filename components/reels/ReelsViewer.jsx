@@ -10,13 +10,13 @@ import {
   Pause,
   Volume2,
   VolumeX,
-  Heart,
-  MessageCircle,
   Send,
   Bookmark,
   X,
 } from "lucide-react";
 import "swiper/css";
+import ReelReactionButton from "@/components/reels/ReelReactionButton";
+import ReelCommentForm from "@/components/reels/ReelCommentForm";
 
 export default function ReelsViewer({
   open,
@@ -40,8 +40,12 @@ export default function ReelsViewer({
       return;
     }
 
+    let openHintTimer;
+
     if (!hasShownSwipeHintRef.current) {
-      setShowSwipeHint(true);
+      openHintTimer = window.setTimeout(() => {
+        setShowSwipeHint(true);
+      }, 0);
       hasShownSwipeHintRef.current = true;
     }
 
@@ -54,6 +58,7 @@ export default function ReelsViewer({
 
     return () => {
       document.body.style.overflow = originalOverflow;
+      window.clearTimeout(openHintTimer);
       window.clearTimeout(hintTimer);
     };
   }, [open]);
@@ -129,6 +134,26 @@ export default function ReelsViewer({
     swiper.slidePrev();
   };
 
+  const handleCommentOpenChange = (isOpen) => {
+    const swiper = viewerSwiperRef.current;
+    if (!swiper) return;
+    swiper.allowTouchMove = !isOpen;
+  };
+
+  useEffect(() => {
+    if (!open) return;
+
+    const syncTimer = window.setTimeout(() => {
+      const swiper = viewerSwiperRef.current;
+      if (!swiper) return;
+
+      swiper.slideTo(initialIndex, 0, false);
+      syncActiveVideoPlayback(initialIndex);
+    }, 0);
+
+    return () => window.clearTimeout(syncTimer);
+  }, [open, initialIndex, syncActiveVideoPlayback]);
+
   const toggleActiveVideoPlay = () => {
     const activeVideo = reelVideoRefs.current[viewerIndex];
     if (!activeVideo) return;
@@ -172,6 +197,7 @@ export default function ReelsViewer({
       </div>
 
       <Swiper
+        key={`${open ? initialIndex : "closed"}-${reels.map((reel) => reel.id).join("-")}`}
         modules={[Mousewheel, Keyboard]}
         direction="vertical"
         mousewheel={{ forceToAxis: true }}
@@ -299,20 +325,30 @@ export default function ReelsViewer({
                     <Volume2 className="h-5 w-5" />
                   )}
                 </button>
-                <button
-                  type="button"
-                  className="bg-black/60 rounded-full p-2.5"
-                  aria-label="Like reel"
-                >
-                  <Heart className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  className="bg-black/60 rounded-full p-2.5"
-                  aria-label="Comment on reel"
-                >
-                  <MessageCircle className="h-5 w-5" />
-                </button>
+                <ReelReactionButton
+                  reelId={slide.reel?.id}
+                  initialReaction={
+                    slide.reel?.current_user_reaction ??
+                    slide.reel?.my_reaction ??
+                    null
+                  }
+                  initialCount={
+                    slide.reel?.reactions_count ??
+                    slide.reel?.reaction_count ??
+                    slide.reel?.react_count ??
+                    0
+                  }
+                />
+                <ReelCommentForm
+                  reelId={slide.reel?.id}
+                  comments={slide.reel?.comments || []}
+                  initialCount={
+                    slide.reel?.comments_count ??
+                    slide.reel?.comment_count ??
+                    0
+                  }
+                  onOpenChange={handleCommentOpenChange}
+                />
                 <button
                   type="button"
                   className="bg-black/60 rounded-full p-2.5"

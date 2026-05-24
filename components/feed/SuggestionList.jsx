@@ -99,7 +99,7 @@ export default function SuggestionList() {
   };
 
   return (
-    <aside className="absolute top-5 right-5 w-88 max-w-[calc(100vw-2rem)] rounded-2xl border bg-card p-4 hidden lg:block">
+    <aside className="absolute top-5 right-5 w-88 max-w-[calc(100vw-2rem)] rounded-2xl border bg-card p-4 hidden 2xl:block">
       <h3 className="text-sm font-semibold text-muted-foreground mb-4">
         People you may know
       </h3>

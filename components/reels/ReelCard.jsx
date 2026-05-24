@@ -53,12 +53,6 @@ export default function ReelCard({ reel, onView }) {
         </div>
       )}
 
-      {/* Caption tooltip */}
-      {reel.caption && (
-        <div className="absolute top-2 left-2 max-w-[80%] bg-black/80 text-white text-xs p-2 rounded hidden group-hover:block">
-          {reel.caption}
-        </div>
-      )}
     </button>
   );
 }
