@@ -16,7 +16,7 @@ export default function AddManagerPage() {
     data: campaignsData,
     isLoading: campaignsLoading,
   } = useQuery({
-    queryKey: ["/ads/my-campaigns", accessToken],
+    queryKey: ["/ads/campaigns/me", accessToken],
     queryFn: fetchWithToken,
     enabled: !!accessToken,
   });
@@ -57,7 +57,10 @@ export default function AddManagerPage() {
 
         {/* My Campaigns Tab */}
         <TabsContent value="campaigns">
-          <MyCampaignsList campaigns={campaigns} isLoading={campaignsLoading} />
+          <MyCampaignsList 
+          accessToken={accessToken}
+          campaigns={campaigns} 
+          isLoading={campaignsLoading} />
         </TabsContent>
 
         {/* Create Campaign Tab */}

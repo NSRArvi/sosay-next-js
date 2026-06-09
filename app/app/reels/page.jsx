@@ -148,9 +148,9 @@ export default function ReelsPage() {
             className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-purple-100 dark:data-[state=active]:bg-purple-900 data-[state=active]:text-purple-700 dark:data-[state=active]:text-purple-100 cursor-pointer"
           >
             <Upload className="h-4 w-4" />
-            <span>Contents</span>
+            <span>My Reels</span>
           </TabsTrigger>
-          <TabsTrigger
+          {/* <TabsTrigger
             value="fans"
             className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-pink-100 dark:data-[state=active]:bg-pink-900 data-[state=active]:text-pink-700 dark:data-[state=active]:text-pink-100 cursor-pointer"
           >
@@ -163,7 +163,7 @@ export default function ReelsPage() {
           >
             <Wallet className="h-4 w-4" />
             <span>Wallet</span>
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
         {/* Reels Tab (Public Feed) */}

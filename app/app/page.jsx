@@ -16,6 +16,7 @@ export default function FeedPage() {
   const [pagination, setPagination] = useState({});
   const [hasNextPage, setHasNextPage] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showSuggestion, setShowSuggestion] = useState(true);
   const postsContainerRef = useRef(null);
   const observerRef = useRef(null);
   const postRefs = useRef([]);
@@ -137,7 +138,7 @@ export default function FeedPage() {
         </p>
       </div>
 
-      <SuggestionList/>
+      {showSuggestion && <SuggestionList setShowSuggestion={setShowSuggestion} />}
 
       <div>
         {allPosts.length === 0 && !isLoading ? (

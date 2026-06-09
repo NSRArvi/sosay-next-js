@@ -25,6 +25,7 @@ import Chatpanel from "@/components/message/Chatpanel";
 import { ListingCard } from "@/components/shop/Listingcard";
 import toast from "react-hot-toast";
 import "swiper/css";
+import Link from "next/link";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
 
@@ -109,7 +110,7 @@ async function translateText(text, targetLang) {
   const plainText = stripHtml(text);
   const chunks = chunkText(plainText);
   const results = await Promise.all(
-    chunks.map((chunk) => translateChunk(chunk, targetLang))
+    chunks.map((chunk) => translateChunk(chunk, targetLang)),
   );
   return results.join(" ");
 }
@@ -188,6 +189,8 @@ export default function ShopDetailView() {
     queryFn: () => fetchPublicDetail(slug),
     enabled: !!slug,
   });
+
+  const shopUrl = data?.shop_url;
 
   const item = data?.data;
   const images = item?.images || [];
@@ -382,9 +385,24 @@ export default function ShopDetailView() {
                   <div className="flex items-center gap-3 flex-wrap">
                     {isTranslating ? (
                       <span className="text-xs text-gray-400 flex items-center gap-1">
-                        <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        <svg
+                          className="animate-spin h-3 w-3"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          />
                         </svg>
                         Translating...
                       </span>
@@ -394,9 +412,13 @@ export default function ShopDetailView() {
                         defaultValue=""
                         className="text-xs border border-gray-200 rounded-md px-2 py-1 text-gray-600 bg-gray-50 cursor-pointer"
                       >
-                        <option value="" disabled>🌐 Translate</option>
+                        <option value="" disabled>
+                          🌐 Translate
+                        </option>
                         {LANGUAGES.map((l) => (
-                          <option key={l.value} value={l.value}>{l.label}</option>
+                          <option key={l.value} value={l.value}>
+                            {l.label}
+                          </option>
                         ))}
                       </select>
                     )}
@@ -414,7 +436,9 @@ export default function ShopDetailView() {
                     )}
                   </div>
 
-                  {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+                  {error && (
+                    <p className="text-xs text-red-500 mt-1">{error}</p>
+                  )}
                 </div>
               )}
 
@@ -452,23 +476,37 @@ export default function ShopDetailView() {
                   <p className="text-sm font-semibold text-gray-700">
                     {item.user?.name}
                   </p>
-                  <p className="text-xs text-gray-400">Seller</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-gray-400">Seller</p>
+                    {shopUrl && (
+                      <Link
+                        href={shopUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs px-2 py-1 rounded-xl text-white bg-secondary"
+                      >
+                        Visit Store
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {accessToken ? (
                 <>
                   {item?.user_id !== userInfo?.id && (
-                    <Button
-                      onClick={() => {
-                        setOpenChatDialog(true);
-                        setReceiver(item.user);
-                      }}
-                      className="w-full bg-secondary hover:bg-secondary/90 rounded-full gap-2"
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      Contact Seller
-                    </Button>
+                    <>
+                      <Button
+                        onClick={() => {
+                          setOpenChatDialog(true);
+                          setReceiver(item.user);
+                        }}
+                        className="w-full bg-secondary hover:bg-secondary/90 rounded-full gap-2"
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        Contact Seller
+                      </Button>
+                    </>
                   )}
                 </>
               ) : (

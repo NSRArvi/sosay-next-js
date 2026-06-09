@@ -1,6 +1,17 @@
-import { Edit, EllipsisVertical, MessageCircle, Share2, Trash2 } from "lucide-react";
+import {
+  Edit,
+  EllipsisVertical,
+  MessageCircle,
+  Share2,
+  Trash2,
+} from "lucide-react";
+
 import Link from "next/link";
+
+import { useEffect, useRef, useState } from "react"; // <-- Added hooks
+
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+
 import {
   Dialog,
   DialogContent,
@@ -9,44 +20,130 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
 import PostComments from "./PostComments";
+
 import MediaSwiper from "./MediaSwiper";
+
 import ReactionButton from "./ReactionButton";
+
 import PostContent from "./PostContent";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { useAppContext } from "@/context/context";
+
 import { postWithToken } from "@/helpers/api";
+
 import { toast } from "react-hot-toast";
 
 export default function PostCard({ post }) {
-  // console.log(post);
   const queryClient = useQueryClient();
+
   const { accessToken, userInfo } = useAppContext();
 
   const images = post?.post_files?.filter((file) => file.file_type === 1) || [];
+
   const videos = post?.post_files?.filter((file) => file.file_type === 2) || [];
+
   const allMedia = [...images, ...videos].sort((a, b) => a.id - b.id);
 
+  // --- NEW: Ad Impression Tracking Logic ---
+
+  const postRef = useRef(null);
+
+  const [hasTracked, setHasTracked] = useState(false);
+
+  useEffect(() => {
+    // 1. Only observe if it's a sponsored post and hasn't been tracked yet
+
+    if (!post?.is_sponsored || !post?.campaign_id || hasTracked) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+
+        // 2. If the ad is at least 50% visible on the user's screen
+
+        if (entry.isIntersecting) {
+          fireSilentImpression(post.campaign_id);
+
+          setHasTracked(true); // Mark as tracked
+
+          observer.disconnect(); // Stop observing
+        }
+      },
+
+      { threshold: 0.5 },
+    );
+
+    if (postRef.current) {
+      observer.observe(postRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasTracked, post?.is_sponsored, post?.campaign_id]);
+
+  const fireSilentImpression = (campaignId) => {
+    // Using native fetch to utilize the keepalive flag.
+
+    // Note: Replace the base URL if your environment variable differs
+
+    const API_BASE_URL =
+      process.env.NEXT_PUBLIC_API_URL || "https://api.sosay.org/api/v1";
+
+    fetch(`${API_BASE_URL}/ads/impressions`, {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+
+        Accept: "application/json",
+
+        Authorization: `Bearer ${accessToken}`, // Pulled from your context
+      },
+
+      body: JSON.stringify({ campaign_id: campaignId }),
+
+      keepalive: true, // Crucial for silent background completion
+    }).catch(() => {
+      // Fail silently for analytics
+    });
+  };
+
+  // --- END NEW LOGIC ---
+
   // Delete post mutation
+
   const deletePostMutation = useMutation({
     mutationFn: async (postId) => {
       const formData = new FormData();
+
       formData.append("_method", "DELETE");
 
       return await postWithToken(
         `/feed_management/private/posts/${postId}`,
+
         formData,
-        accessToken
+
+        accessToken,
       );
     },
+
     onSuccess: (data) => {
       if (data.status === true) {
         toast.success(data.message || "Post deleted successfully");
-        // Invalidate both profile and feed queries
+
         queryClient.invalidateQueries({
           queryKey: [`/feed_management/private/feeds/all/post/${userInfo.id}`],
         });
+
         queryClient.invalidateQueries({
           queryKey: ["/feed_management/public/feed/all/post"],
         });
@@ -54,41 +151,49 @@ export default function PostCard({ post }) {
         toast.error(data.message || "Failed to delete post");
       }
     },
+
     onError: () => {
       toast.error("Failed to delete post");
     },
   });
 
-  // Handle delete post
   const handleDeletePost = (postId) => {
     if (confirm("Are you sure you want to delete this post?")) {
       deletePostMutation.mutate(postId);
     }
   };
 
-  // Format date nicely
   const formatDate = (dateString) => {
     const date = new Date(dateString);
+
     const now = new Date();
+
     const diff = Math.floor((now - date) / 1000);
 
     if (diff < 60) return "Just now";
+
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+
     if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
 
     return date.toLocaleDateString("en-US", {
       month: "short",
+
       day: "numeric",
+
       year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
     });
   };
 
-  // Check if current user owns this post
   const isOwner = userInfo?.id === post?.user?.id;
 
   return (
-    <div className="w-full bg-white border border-gray-200 rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 shadow-sm hover:shadow-md transition-shadow">
+    <div
+      ref={postRef} // <-- Attached the observer reference here
+      className={`w-full bg-white border ${post?.is_sponsored ? "border-blue-300" : "border-gray-200"} rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 shadow-sm hover:shadow-md transition-shadow`}
+    >
       {/* Header */}
       <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
         <Link href={`/app/profile/${post?.user?.id}`}>
@@ -105,10 +210,21 @@ export default function PostCard({ post }) {
               {post?.user?.name}
             </p>
           </Link>
-          <p className="text-xs text-gray-500">
-            {formatDate(post?.created_at)}
-          </p>
+
+          {/* Added Sponsored Badge Area */}
+          <div className="flex items-center gap-2">
+            <p className="text-xs text-gray-500">
+              {formatDate(post?.created_at)}
+            </p>
+
+            {post?.is_sponsored === 1 && (
+              <span className="text-[10px] bg-blue-50 text-blue-600 border border-blue-200 font-semibold px-1.5 py-0.5 rounded-sm">
+                Sponsored
+              </span>
+            )}
+          </div>
         </div>
+
         {isOwner && (
           <Popover>
             <PopoverTrigger asChild>
@@ -155,6 +271,7 @@ export default function PostCard({ post }) {
       <MediaSwiper media={allMedia} postId={post.id} />
 
       {/* Reactions Summary */}
+
       {post?.reactions_count > 0 && (
         <div className="flex items-center gap-2 mb-2 text-xs text-gray-600 overflow-x-auto">
           {post?.reaction_counts && (
@@ -196,14 +313,12 @@ export default function PostCard({ post }) {
               <span className="text-xs sm:text-sm hidden md:block">Share</span>
             </button>
           </div>
-
           <DialogTrigger asChild>
             <button className="text-xs sm:text-sm text-gray-500 hover:text-blue-500 cursor-pointer transition-colors font-medium whitespace-nowrap">
               {post?.comments?.length || 0} comments
             </button>
           </DialogTrigger>
         </div>
-
         <DialogContent className="sm:max-w-3xl max-h-[90dvh] w-[95vw] sm:w-full overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -221,7 +336,6 @@ export default function PostCard({ post }) {
               {formatDate(post?.created_at)}
             </DialogDescription>
           </DialogHeader>
-
           <PostComments post={post} allMedia={allMedia} />
         </DialogContent>
       </Dialog>

@@ -12,14 +12,12 @@ export default function Page() {
   const [receiver, setReceiver] = useState(null);
   const [showChatPanel, setShowChatPanel] = useState(false);
 
-  // fetch chat history
   const { data: chatHistory, isLoading: chatHistoryLoading } = useQuery({
     queryKey: ["/chat/inbox", accessToken],
     queryFn: fetchWithToken,
     enabled: !!accessToken,
   });
 
-  //check whatsapp exist or not
   const { data: whatsappData } = useQuery({
     queryKey: [
       `/chat/check-if-whatsapp-contact-exist/${userInfo?.id}`,
@@ -47,8 +45,9 @@ export default function Page() {
   };
 
   return (
-    <section className="relative h-[calc(100dvh-56px)] md:h-[calc(100dvh-32px)] mt-14 md:mt-8 p-4 overflow-hidden">
-      <div className="hidden lg:flex gap-8 h-full">
+    <section className="relative h-[calc(100dvh-56px)] md:h-[calc(100dvh-32px)] mt-14 md:mt-8 overflow-hidden">
+      {/* Desktop layout */}
+      <div className="hidden lg:flex gap-8 h-full px-4">
         <div className="lg:w-2/5 h-full overflow-hidden">
           <ChatHistory
             whatsAppInfo={whatsAppInfo}
@@ -61,13 +60,13 @@ export default function Page() {
             whatsapp={whatsapp}
           />
         </div>
-
         <div className="lg:w-3/5 h-full overflow-hidden">
           <Chatpanel receiver={desktopReceiver} whatsapp={whatsapp} />
         </div>
       </div>
 
-      <div className="lg:hidden h-full overflow-hidden">
+      {/* Mobile layout */}
+      <div className="lg:hidden h-full w-full overflow-hidden px-4">
         <ChatHistory
           whatsAppInfo={whatsAppInfo}
           setReceiver={setReceiver}
@@ -78,17 +77,20 @@ export default function Page() {
           onSelectChat={handleSelectChat}
           whatsapp={whatsapp}
         />
-
-        {isMobileChatPanelOpen && mobileReceiver && (
-          <div className="fixed inset-0 z-50 bg-background lg:hidden">
-            <Chatpanel
-              receiver={mobileReceiver}
-              setShowChatPanel={setShowChatPanel} whatsapp={whatsapp}
-            />
-          </div>
-        )}
       </div>
 
+      {/* Mobile chat overlay */}
+      {isMobileChatPanelOpen && mobileReceiver && (
+        <div className="fixed inset-0 z-50 bg-background lg:hidden">
+          <Chatpanel
+            receiver={mobileReceiver}
+            setShowChatPanel={setShowChatPanel}
+            whatsapp={whatsapp}
+          />
+        </div>
+      )}
+
+      {/* Desktop empty state */}
       {!desktopReceiver && !chatHistoryLoading && (
         <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-none">
           <p className="text-muted-foreground">No chats available yet</p>

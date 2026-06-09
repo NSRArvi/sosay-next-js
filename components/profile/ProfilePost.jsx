@@ -18,8 +18,6 @@ export default function ProfilePost() {
     enabled: !!accessToken,
   });
 
-  console.log("ProfilePost",data);
-
   const posts = data?.data || [];
 
   if (isLoading) return <PostCardSkeletonList />;

@@ -3,15 +3,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Search,
   Package,
   SlidersHorizontal,
   X,
   ArrowUpDown,
-  LogIn,
+  Globe,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -192,20 +193,26 @@ export default function PublicMarketplace() {
           >
             My Listing
           </button>
+          <Link
+            href="https://scottypumpkin.com/spump-escrow"
+            className="px-4 py-1.5 rounded-full text-sm font-medium text-gray-600 hover:text-secondary transition"
+          >
+            How to buy?
+          </Link>
         </div>
       </div>
 
       {/* Top bar */}
-      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3 z-50 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-xl">
+      <div className="sticky top-0 z-50 mx-auto flex w-full max-w-5xl items-center gap-3 rounded-2xl border border-gray-200 bg-white/95 px-3 py-3 shadow-lg shadow-gray-200/50 backdrop-blur-sm sm:px-4">
         {/* Search input */}
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Search listings..."
             value={search}
             onChange={handleSearchChange}
-            className="w-full pl-9 pr-8 py-2 text-sm bg-gray-100 rounded-full border border-transparent focus:outline-none focus:border-secondary/40 focus:bg-white transition"
+            className="h-11 w-full rounded-2xl border border-transparent bg-gray-100 pl-9 pr-8 text-sm font-medium text-gray-800 transition placeholder:text-gray-400 focus:border-secondary/40 focus:bg-white focus:outline-none"
           />
           {search && (
             <button
@@ -223,12 +230,12 @@ export default function PublicMarketplace() {
           <SheetTrigger asChild>
             <button
               type="button"
-              className="relative flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-gray-200 text-sm text-gray-600 hover:border-secondary hover:text-secondary transition shrink-0"
+              className="relative flex h-11 items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:border-secondary hover:text-secondary shrink-0"
             >
               <SlidersHorizontal className="h-4 w-4" />
               <span className="hidden sm:inline">Filters</span>
               {activeFilterCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-secondary text-white text-[10px] flex items-center justify-center font-bold">
+                <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-white">
                   {activeFilterCount}
                 </span>
               )}
@@ -260,13 +267,13 @@ export default function PublicMarketplace() {
 
       <div className="max-w-5xl mx-auto px-4 mt-6">
         {/* Header row */}
-        <div className="mb-4 flex items-start justify-between">
+        <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-800">
-              Spump Marketplace
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+              Marketplace
             </h1>
             {!isLoading && paginatedData && (
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <p className="mt-1 text-sm text-gray-500">
                 {activeSearch
                   ? `${paginatedData.total} result${paginatedData.total !== 1 ? "s" : ""} for "${activeSearch}"`
                   : `${paginatedData.total} listing${paginatedData.total !== 1 ? "s" : ""} available`}
@@ -283,38 +290,49 @@ export default function PublicMarketplace() {
           </div>
 
           {/* Sort shortcut */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
-            <select
-              value={filters.sort_by_price}
-              onChange={(e) => {
-                setFilters((p) => ({ ...p, sort_by_price: e.target.value }));
-                setPage(1);
-              }}
-              className="text-xs text-gray-600 border-none bg-transparent focus:outline-none cursor-pointer"
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            <select
-              value={filters.country_id}
-              onChange={(e) => {
-                setFilters((p) => ({ ...p, country_id: e.target.value }));
-                setPage(1);
-              }}
-              disabled={countriesLoading}
-              className="ml-3 text-xs text-gray-600 border-none bg-transparent focus:outline-none cursor-pointer"
-            >
-              <option value="">All countries</option>
-              {countries.map((c) => (
-                <option key={c.id} value={String(c.id)}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+          <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[360px]">
+            <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
+                <ArrowUpDown className="h-4 w-4 text-gray-400" />
+                Sort by Price
+              </div>
+              <select
+                value={filters.sort_by_price}
+                onChange={(e) => {
+                  setFilters((p) => ({ ...p, sort_by_price: e.target.value }));
+                  setPage(1);
+                }}
+                className="mt-1.5 w-full appearance-none bg-transparent text-sm font-medium text-gray-800 focus:outline-none cursor-pointer"
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
+                <Globe className="h-4 w-4 text-gray-400" />
+                Country
+              </div>
+              <select
+                value={filters.country_id}
+                onChange={(e) => {
+                  setFilters((p) => ({ ...p, country_id: e.target.value }));
+                  setPage(1);
+                }}
+                disabled={countriesLoading}
+                className="mt-1.5 w-full appearance-none bg-transparent text-sm font-medium text-gray-800 focus:outline-none cursor-pointer disabled:cursor-not-allowed disabled:text-gray-400"
+              >
+                <option value="">All countries</option>
+                {countries.map((c) => (
+                  <option key={c.id} value={String(c.id)}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 

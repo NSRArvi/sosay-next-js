@@ -31,19 +31,30 @@ export const AppProvider = ({ children }) => {
   const countries = countriesData?.data || [];
 
   // Check user is verified
-  const { data } = useQuery({
+  const { data: userVerifyData } = useQuery({
     queryKey: ["/user/is-verified", accessToken],
     queryFn: fetchWithToken,
     enabled: !!accessToken,
   });
 
+  // Check user have store
+  const { data: userShopData } = useQuery({
+    queryKey: ["/marketplace/check-if-shop-available", accessToken],
+    queryFn: fetchWithToken,
+    enabled: !!accessToken,
+  });
+
+  // const shopAvailable = userShopData?.data?.shop_available === true;
+  const shopAvailable = userShopData?.data?.has_package;
+  const existingShopUrl = userShopData?.data?.shop_url;
+
   // Sync verification state whenever query data changes
   useEffect(() => {
-    if (data) {
-      setIsUserVerified(data.status === true);
-      setVerificationInfo(data.data ?? null);
+    if (userVerifyData) {
+      setIsUserVerified(userVerifyData.status === true);
+      setVerificationInfo(userVerifyData.data ?? null);
     }
-  }, [data]);
+  }, [userVerifyData]);
 
   // Load user info & token from localStorage on mount
   useEffect(() => {
@@ -86,6 +97,8 @@ export const AppProvider = ({ children }) => {
         accessToken,
         isUserVerified,
         verificationInfo,
+        shopAvailable,
+        existingShopUrl,
         countries,
         countriesLoading,
         uploadProgress,

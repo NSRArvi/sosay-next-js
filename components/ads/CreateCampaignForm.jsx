@@ -50,7 +50,7 @@ export default function CreateCampaignForm({
       if (targetMinAge) formData.append("target_min_age", targetMinAge);
       if (targetMaxAge) formData.append("target_max_age", targetMaxAge);
 
-      return await postWithToken("/ads/boost", formData, accessToken);
+      return await postWithToken("/ads/campaigns", formData, accessToken);
     },
     onSuccess: (data) => {
       if (data.status || data.success) {
@@ -66,7 +66,7 @@ export default function CreateCampaignForm({
         setTargetMaxAge("");
 
         // Refetch campaigns
-        queryClient.invalidateQueries(["/ads/my-campaigns", accessToken]);
+        queryClient.invalidateQueries(["/ads/campaigns/me", accessToken]);
       } else {
         toast.error(data.message || "Failed to create campaign");
       }

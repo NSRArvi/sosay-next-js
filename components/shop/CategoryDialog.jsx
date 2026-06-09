@@ -6,6 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import ShopHeader from "./ShopHeader";
+import { useAppContext } from "@/context/context";
 
 export default function CategoryDialog({
   open,
@@ -15,12 +16,13 @@ export default function CategoryDialog({
   onSelect,
   title = "Choose a Category",
 }) {
+  const { shopAvailable } = useAppContext();
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] md:max-w-5xl max-h-[92vh] overflow-y-auto">
           <DialogHeader>
-            <ShopHeader/>
+            {!shopAvailable && <ShopHeader/>}
             <DialogTitle>{title}</DialogTitle>
           </DialogHeader>
 

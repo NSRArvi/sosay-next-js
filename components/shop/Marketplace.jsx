@@ -7,13 +7,13 @@ import { useAppContext } from "@/context/context";
 import { useRouter } from "next/navigation";
 import {
   Search,
-  Tag,
   Package,
   SlidersHorizontal,
   X,
   ArrowUpDown,
+  Globe,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
 import {
   Sheet,
   SheetContent,
@@ -173,16 +173,16 @@ export default function Marketplace() {
   return (
     <section className="min-h-screen bg-gray-50 pb-16">
       {/* Top bar */}
-      <div className="mx-auto flex w-full max-w-5xl items-center gap-3 rounded-xl border border-gray-200 bg-white/90 px-3 py-3 backdrop-blur-sm sm:px-4 sticky top-0 z-50">
+      <div className="sticky top-0 z-50 mx-auto flex w-full max-w-5xl items-center gap-3 rounded-2xl border border-gray-200 bg-white/95 px-3 py-3 shadow-lg shadow-gray-200/50 backdrop-blur-sm sm:px-4">
         {/* Search input */}
         <div className="flex-1 relative">
-          <Search className="absolute z-0 left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 z-0 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Search listings..."
             value={search}
             onChange={handleSearchChange}
-            className="w-full pl-9 pr-8 py-2 text-sm bg-gray-100 rounded-full border border-transparent focus:outline-none focus:border-secondary/40 focus:bg-white transition"
+            className="h-11 w-full rounded-2xl border border-transparent bg-gray-100 pl-9 pr-8 text-sm font-medium text-gray-800 transition placeholder:text-gray-400 focus:border-secondary/40 focus:bg-white focus:outline-none"
           />
           {search && (
             <button
@@ -200,12 +200,12 @@ export default function Marketplace() {
           <SheetTrigger asChild>
             <button
               type="button"
-              className="relative flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-gray-200 text-sm text-gray-600 hover:border-secondary hover:text-secondary transition shrink-0"
+              className="relative flex h-11 items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:border-secondary hover:text-secondary shrink-0"
             >
               <SlidersHorizontal className="h-4 w-4" />
               <span className="hidden sm:inline">Filters</span>
               {activeFilterCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-secondary text-white text-[10px] flex items-center justify-center font-bold">
+                <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-white">
                   {activeFilterCount}
                 </span>
               )}
@@ -237,11 +237,13 @@ export default function Marketplace() {
 
       <div className="mx-auto mt-6 w-full max-w-5xl px-3 sm:px-4">
         {/* Header row */}
-        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-800">Marketplace</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+              Marketplace
+            </h1>
             {!isLoading && paginatedData && (
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <p className="mt-1 text-sm text-gray-500">
                 {activeSearch
                   ? `${paginatedData.total} result${paginatedData.total !== 1 ? "s" : ""} for "${activeSearch}"`
                   : `${paginatedData.total} listing${paginatedData.total !== 1 ? "s" : ""} available`}
@@ -258,44 +260,55 @@ export default function Marketplace() {
           </div>
 
           {/* Sort shortcut (mirrors sheet but quick access) */}
-          <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
-            <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
-            <select
-              value={filters.sort_by_price}
-              onChange={(e) => {
-                setFilters((p) => ({ ...p, sort_by_price: e.target.value }));
-                setPage(1);
-              }}
-              className="text-xs text-gray-600 border-none bg-transparent focus:outline-none cursor-pointer"
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            <select
-              value={filters.country_id}
-              onChange={(e) => {
-                setFilters((p) => ({ ...p, country_id: e.target.value }));
-                setPage(1);
-              }}
-              disabled={countriesLoading}
-              className="ml-3 text-xs text-gray-600 border-none bg-transparent focus:outline-none cursor-pointer"
-            >
-              <option value="">All countries</option>
-              {countries.map((c) => (
-                <option key={c.id} value={String(c.id)}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+          <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[360px]">
+            <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
+                <ArrowUpDown className="h-4 w-4 text-gray-400" />
+                Sort by Price
+              </div>
+              <select
+                value={filters.sort_by_price}
+                onChange={(e) => {
+                  setFilters((p) => ({ ...p, sort_by_price: e.target.value }));
+                  setPage(1);
+                }}
+                className="mt-1.5 w-full appearance-none bg-transparent text-sm font-medium text-gray-800 focus:outline-none cursor-pointer"
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
+                <Globe className="h-4 w-4 text-gray-400" />
+                Country
+              </div>
+              <select
+                value={filters.country_id}
+                onChange={(e) => {
+                  setFilters((p) => ({ ...p, country_id: e.target.value }));
+                  setPage(1);
+                }}
+                disabled={countriesLoading}
+                className="mt-1.5 w-full appearance-none bg-transparent text-sm font-medium text-gray-800 focus:outline-none cursor-pointer disabled:cursor-not-allowed disabled:text-gray-400"
+              >
+                <option value="">All countries</option>
+                {countries.map((c) => (
+                  <option key={c.id} value={String(c.id)}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
         {/* Listings grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <ListingCardSkeleton key={i} />
             ))}
@@ -322,7 +335,7 @@ export default function Marketplace() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {listings.map((item) => (
                 <ListingCard
                   key={item.id}

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Eye, Loader2, UserPlus } from "lucide-react";
+import { Eye, Loader2, UserPlus, X } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { fetchWithToken } from "@/helpers/api";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,7 @@ function SuggestionAvatar({ user }) {
   );
 }
 
-export default function SuggestionList() {
+export default function SuggestionList({ setShowSuggestion }) {
   const { accessToken } = useAppContext();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -50,7 +50,7 @@ export default function SuggestionList() {
 
   const suggestions = useMemo(() => {
     const users = data?.data || [];
-    return users.slice(0, 5);
+    return users.slice(0, 4);
   }, [data]);
 
   const sendRequestMutation = useMutation({
@@ -99,14 +99,23 @@ export default function SuggestionList() {
   };
 
   return (
-    <aside className="absolute top-5 right-5 w-88 max-w-[calc(100vw-2rem)] rounded-2xl border bg-card p-4 hidden 2xl:block">
-      <h3 className="text-sm font-semibold text-muted-foreground mb-4">
-        People you may know
-      </h3>
+    <aside className="fixed top-5 right-5 w-88 max-w-[calc(100vw-2rem)] rounded-2xl border bg-card p-4 hidden 2xl:block">
+      <div>
+        <h3 className="text-sm font-semibold text-muted-foreground mb-4">
+          People you may know
+        </h3>
+        <button
+          type="button"
+          onClick={() => setShowSuggestion(false)}
+          className="absolute top-3 right-3 p-1 rounded-full hover:bg-red-50 transition cursor-pointer"
+        >
+          <X className="h-4 w-4 text-muted-foreground hover:text-red-500 transition" />
+        </button>
+      </div>
 
       <div className="flex flex-col gap-3">
         {isLoading ? (
-          [...Array(5)].map((_, i) => (
+          [...Array(4)].map((_, i) => (
             <div
               key={i}
               className="flex items-center justify-between rounded-xl border bg-background p-3"

@@ -90,7 +90,13 @@ export default function ChatHistory({
             Chat with your friends and stay connected
           </p>
         </div>
-        <Image onClick={() => setIsWhatsAppModalOpen(true)} src={whatsapp} alt="WhatsApp" height={40} width={40} />
+        <Image
+          onClick={() => setIsWhatsAppModalOpen(true)}
+          src={whatsapp}
+          alt="WhatsApp"
+          height={40}
+          width={40}
+        />
       </div>
 
       <Dialog open={isWhatsAppModalOpen} onOpenChange={setIsWhatsAppModalOpen}>
@@ -138,7 +144,7 @@ export default function ChatHistory({
                   onClick={() => {
                     handleSelectChat(chat);
                   }}
-                  className="cursor-pointer w-full text-left"
+                  className="cursor-pointer w-full text-left block min-w-0"
                 >
                   <ChatCard chat={chat} receiver={receiver} />
                 </button>

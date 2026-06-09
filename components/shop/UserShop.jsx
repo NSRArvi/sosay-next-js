@@ -13,11 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Plus,
-  Package,
-  Loader2,
-} from "lucide-react";
+import { Plus, Package, Loader2 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { fetchWithToken } from "@/helpers/api";
 import toast from "react-hot-toast";
@@ -26,15 +22,17 @@ import { NewListingDialog } from "./Newlistingdialog";
 import UpdateListingDialog from "./UpdateListingDialog";
 import UpdateStatusDialog from "./UpdateStatusDialog";
 import MyListingCard from "./MyListingCard";
+import ShopUrlDialog from "./ShopUrlDialog";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
 
-// UserShop 
+// UserShop
 export default function UserShop() {
-  const { accessToken } = useAppContext();
+  const { accessToken, shopAvailable, existingShopUrl } = useAppContext();
   const queryClient = useQueryClient();
 
   const [showNewDialog, setShowNewDialog] = useState(false);
+  const [shopUrlDialog, setShopUrlDialog] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [statusItem, setStatusItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
@@ -53,11 +51,14 @@ export default function UserShop() {
       const formData = new FormData();
       formData.append("_method", "DELETE");
 
-      const res = await fetch(`${BASE_URL}/marketplace/listings/${deleteItem.id}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${accessToken}` },
-        body: formData,
-      });
+      const res = await fetch(
+        `${BASE_URL}/marketplace/listings/${deleteItem.id}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}` },
+          body: formData,
+        },
+      );
 
       const data = await res.json();
       if (data.status === true || res.ok) {
@@ -74,7 +75,8 @@ export default function UserShop() {
     }
   };
 
-  const refetch = () => queryClient.invalidateQueries(["/marketplace/me/listings"]);
+  const refetch = () =>
+    queryClient.invalidateQueries(["/marketplace/me/listings"]);
 
   const listings = data?.data || [];
 
@@ -88,13 +90,26 @@ export default function UserShop() {
             {listings.length} item{listings.length !== 1 ? "s" : ""} listed
           </p>
         </div>
-        <Button
-          onClick={() => setShowNewDialog(true)}
-          className="rounded-full bg-secondary hover:bg-secondary/90 gap-1.5 text-sm"
-        >
-          <Plus className="h-4 w-4" />
-          New Listing
-        </Button>
+
+        <div>
+          {shopAvailable && (
+            <Button
+              onClick={() => setShopUrlDialog(true)}
+              className="rounded-full bg-secondary hover:bg-secondary/90 gap-1.5 text-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Connect Store
+            </Button>
+          )}
+
+          <Button
+            onClick={() => setShowNewDialog(true)}
+            className="ml-3 rounded-full bg-secondary hover:bg-secondary/90 gap-1.5 text-sm"
+          >
+            <Plus className="h-4 w-4" />
+            New Listing
+          </Button>
+        </div>
       </div>
 
       {/* Grid */}
@@ -106,15 +121,23 @@ export default function UserShop() {
         </div>
       ) : error ? (
         <div className="text-center py-12">
-          <p className="text-red-500 text-sm mb-3">Failed to load your listings.</p>
-          <Button variant="outline" onClick={refetch} className="rounded-full text-sm">
+          <p className="text-red-500 text-sm mb-3">
+            Failed to load your listings.
+          </p>
+          <Button
+            variant="outline"
+            onClick={refetch}
+            className="rounded-full text-sm"
+          >
             Try Again
           </Button>
         </div>
       ) : listings.length === 0 ? (
         <div className="text-center py-16 border-2 border-dashed border-gray-100 rounded-2xl">
           <Package className="h-12 w-12 mx-auto text-gray-200 mb-3" />
-          <h3 className="text-sm font-semibold text-gray-500 mb-1">No listings yet</h3>
+          <h3 className="text-sm font-semibold text-gray-500 mb-1">
+            No listings yet
+          </h3>
           <p className="text-xs text-gray-400 mb-4">
             Start selling by creating your first listing.
           </p>
@@ -148,6 +171,15 @@ export default function UserShop() {
         onSuccess={refetch}
       />
 
+      {/* shop url dialog  */}
+      <ShopUrlDialog
+        open={shopUrlDialog}
+        onClose={() => setShopUrlDialog(false)}
+        accessToken={accessToken}
+        onSuccess={refetch}
+        existingShopUrl={existingShopUrl}
+      />
+
       {/* Edit Dialog */}
       {editItem && (
         <UpdateListingDialog
@@ -171,18 +203,25 @@ export default function UserShop() {
       )}
 
       {/* Delete Confirm */}
-      <AlertDialog open={!!deleteItem} onOpenChange={(v) => !v && setDeleteItem(null)}>
+      <AlertDialog
+        open={!!deleteItem}
+        onOpenChange={(v) => !v && setDeleteItem(null)}
+      >
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Listing?</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete{" "}
-              <span className="font-medium text-gray-700">{deleteItem?.title}</span>? This action
-              cannot be undone.
+              <span className="font-medium text-gray-700">
+                {deleteItem?.title}
+              </span>
+              ? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-full">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
