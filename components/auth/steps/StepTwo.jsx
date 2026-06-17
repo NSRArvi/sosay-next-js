@@ -19,7 +19,12 @@ export default function StepTwo({ view, email, isLoading, onBack, onSubmit }) {
           Verify Your {view ? "Phone" : "Email"}
         </h2>
         <p className="text-sm sm:text-base text-gray-500">
-          We&apos;ve sent a 6-digit code to {view ? "your phone" : email}
+          We&apos;ve sent a 6-digit code to{" "}
+          <span className="text-secondary font-semibold">
+            {view ? "your phone" : email}
+          </span>
+          <br />
+          Please also check your spam folder.
         </p>
       </div>
 

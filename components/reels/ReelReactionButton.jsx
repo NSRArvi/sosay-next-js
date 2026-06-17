@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, Smile, Laugh, Frown, ThumbsUp, Angry } from "lucide-react";
 import toast from "react-hot-toast";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useAppContext } from "@/context/context";
 import { postWithToken } from "@/helpers/api";
 
@@ -28,7 +32,7 @@ export default function ReelReactionButton({
   const [reaction, setReaction] = useState(initialReaction);
   const [reactionCount, setReactionCount] = useState(initialCount);
 
-  const CurrentIcon = reaction ? REACTIONS[reaction]?.icon : Heart;
+  const CurrentIcon = reaction ? REACTIONS[reaction]?.icon : ThumbsUp;
   const currentColor = reaction ? REACTIONS[reaction]?.color : "text-white";
 
   const reactMutation = useMutation({
@@ -38,7 +42,11 @@ export default function ReelReactionButton({
       }
       const formData = new FormData();
       formData.append("type", type);
-      return await postWithToken(`/reels/${reelId}/react`, formData, accessToken);
+      return await postWithToken(
+        `/reels/${reelId}/react`,
+        formData,
+        accessToken,
+      );
     },
     onSuccess: (data) => {
       if (data?.status !== true) {
@@ -121,7 +129,9 @@ export default function ReelReactionButton({
       </Popover>
 
       {reactionCount > 0 ? (
-        <span className="text-[10px] leading-none text-white/80">{reactionCount}</span>
+        <span className="text-[10px] leading-none text-white/80">
+          {reactionCount}
+        </span>
       ) : null}
     </div>
   );

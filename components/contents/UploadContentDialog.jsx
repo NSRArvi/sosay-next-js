@@ -13,12 +13,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
-const MAX_DURATION = 30; // seconds
-const COMMAND_MAX_SIZE = 20 * 1024 * 1024; // 20MB
-const UPLOAD_TOAST_ID = "reel-upload-task";
+const MAX_DURATION = 120; // let's say 2 mins for content, or whatever is reasonable
+const COMMAND_MAX_SIZE = 100 * 1024 * 1024; // 100MB for content
+const UPLOAD_TOAST_ID = "content-upload-task";
 
-export default function UploadReelDialog({
+export default function UploadContentDialog({
   open,
   onOpenChange,
   accessToken,
@@ -27,8 +28,9 @@ export default function UploadReelDialog({
   const queryClient = useQueryClient();
   const [videoFile, setVideoFile] = useState(null);
   const [videoPreview, setVideoPreview] = useState("");
-  const [videoDuration, setVideoDuration] = useState(0);
-  const [caption, setCaption] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [isPremium, setIsPremium] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const videoInputRef = useRef(null);
 
@@ -36,7 +38,6 @@ export default function UploadReelDialog({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("video/")) {
       toast.error("Please select a video file");
       return;
@@ -44,52 +45,28 @@ export default function UploadReelDialog({
 
     setVideoFile(file);
 
-    // Get video duration
     const videoUrl = URL.createObjectURL(file);
-    const video = document.createElement("video");
-    video.src = videoUrl;
-    video.onloadedmetadata = () => {
-      setVideoDuration(video.duration);
-      if (video.duration > MAX_DURATION) {
-        toast.error(`Video must be ${MAX_DURATION} seconds or less`);
-        setVideoFile(null);
-        setVideoPreview("");
-        return;
-      }
-      setVideoPreview(videoUrl);
-    };
-  };
-
-  const compressVideo = async (file) => {
-    if (file.size > COMMAND_MAX_SIZE) {
-      toast.error(
-        "Video file too large. Please use a shorter or lower quality video.",
-      );
-      return null;
-    }
-    return file;
+    setVideoPreview(videoUrl);
   };
 
   const uploadVideoInBackground = async (formData) => {
     try {
-      const response = await postWithToken("/reels", formData, accessToken);
+      const response = await postWithToken("/contents", formData, accessToken);
       const isSuccess = response?.status === true || response?.success === true;
 
       if (isSuccess) {
-        toast.success(response?.message || "Video uploaded successfully!", {
+        toast.success(response?.message || "Content uploaded successfully!", {
           id: UPLOAD_TOAST_ID,
         });
-        // Invalidate reels queries to refresh feeds
-        queryClient.invalidateQueries(["/reels"]);
-        queryClient.invalidateQueries(["/my-reels"]);
+        queryClient.invalidateQueries(["/contents/me"]);
         onUploadSuccess?.();
       } else {
-        toast.error(response?.message || "Failed to upload video", {
+        toast.error(response?.message || "Failed to upload content", {
           id: UPLOAD_TOAST_ID,
         });
       }
     } catch (error) {
-      toast.error("Error uploading video", { id: UPLOAD_TOAST_ID });
+      toast.error("Error uploading content", { id: UPLOAD_TOAST_ID });
       console.error(error);
     }
   };
@@ -97,8 +74,9 @@ export default function UploadReelDialog({
   const resetForm = () => {
     setVideoFile(null);
     setVideoPreview("");
-    setCaption("");
-    setVideoDuration(0);
+    setTitle("");
+    setDescription("");
+    setIsPremium(false);
     if (videoInputRef.current) videoInputRef.current.value = "";
   };
 
@@ -107,20 +85,18 @@ export default function UploadReelDialog({
       toast.error("Please select a video");
       return;
     }
-    if (videoDuration > MAX_DURATION) {
-      toast.error(`Video must be ${MAX_DURATION} seconds or less`);
+    if (videoFile.size > COMMAND_MAX_SIZE) {
+      toast.error("Video file too large. Max size is 100MB.");
       return;
     }
 
-    const compressed = await compressVideo(videoFile);
-    if (!compressed) return;
-
     const formData = new FormData();
-    formData.append("video", compressed);
-    formData.append("caption", caption || "");
+    formData.append("video", videoFile);
+    if (title) formData.append("title", title);
+    if (description) formData.append("description", description);
+    formData.append("is_premium", isPremium ? "1" : "0");
 
-    // Start background upload
-    toast.loading("Uploading video...", { id: UPLOAD_TOAST_ID });
+    toast.loading("Uploading content...", { id: UPLOAD_TOAST_ID });
     uploadVideoInBackground(formData);
     onOpenChange(false);
     resetForm();
@@ -130,14 +106,13 @@ export default function UploadReelDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] sm:max-w-md max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Upload Reel</DialogTitle>
+          <DialogTitle>Upload Content</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Video Input */}
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1.5">
-              Video (Max {MAX_DURATION}s)
+              Video
             </label>
             <input
               ref={videoInputRef}
@@ -149,45 +124,65 @@ export default function UploadReelDialog({
             />
           </div>
 
-          {/* Video Preview */}
           {videoPreview && (
             <div>
               <p className="text-sm font-medium text-gray-700 mb-2">Preview</p>
-              <div className="relative w-full max-w-[320px] mx-auto rounded-xl overflow-hidden bg-black border border-gray-800 aspect-3/5">
+              <div className="relative w-full max-w-[320px] mx-auto rounded-xl overflow-hidden bg-black border border-gray-800 aspect-video">
                 <video
                   src={videoPreview}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   controls
                   playsInline
                 />
-                <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                  {Math.round(videoDuration)}s
-                </div>
               </div>
             </div>
           )}
 
-          {/* Caption */}
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1.5">
-              Caption (Optional)
+              Title (Optional)
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Content title"
+              disabled={isUploading}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/30 disabled:opacity-50"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-1.5">
+              Description (Optional)
             </label>
             <textarea
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-              placeholder="What's on your mind?"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="What is this content about?"
               disabled={isUploading}
-              maxLength={200}
               rows={3}
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/30 disabled:opacity-50"
             />
-            <p className="text-xs text-gray-400 mt-1">{caption.length}/200</p>
           </div>
 
-          {/* Info Box */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="is_premium"
+              checked={isPremium}
+              onCheckedChange={setIsPremium}
+              disabled={isUploading}
+            />
+            <label
+              htmlFor="is_premium"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Premium Content
+            </label>
+          </div>
+
           <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
-            Upload will continue in the background. You can navigate away and
-            will be notified when complete.
+            Upload will continue in the background. You can navigate away and will be notified when complete.
           </div>
         </div>
 
@@ -201,7 +196,7 @@ export default function UploadReelDialog({
           </Button>
           <Button
             onClick={handleUpload}
-            disabled={!videoFile || isUploading || videoDuration > MAX_DURATION}
+            disabled={!videoFile || isUploading}
             className="gap-2"
           >
             {isUploading ? (

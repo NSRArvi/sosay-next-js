@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { useAppContext } from "@/context/context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -41,7 +41,7 @@ export default function SettingsPage() {
   const countryOptions = useMemo(() => {
     const list = Array.isArray(countries) ? countries : [];
     const hasCurrentCountry = list.some(
-      (c) => String(c?.id) === String(profile?.country?.id)
+      (c) => String(c?.id) === String(profile?.country?.id),
     );
 
     if (profile?.country?.id && profile?.country?.name && !hasCurrentCountry) {
@@ -69,7 +69,7 @@ export default function SettingsPage() {
       address: draft.address ?? profile?.address ?? "",
       country_id: draft.country_id ?? getProfileCountryId(profile),
     }),
-    [draft, profile]
+    [draft, profile],
   );
 
   useEffect(() => {
@@ -79,11 +79,14 @@ export default function SettingsPage() {
   }, [profileLoading, profile, router]);
 
   const mutation = useMutation({
-    mutationFn: (formData) => postWithToken("/settings/profile", formData, token),
+    mutationFn: (formData) =>
+      postWithToken("/settings/profile", formData, token),
     onSuccess: (res) => {
       if (res?.status === true) {
         toast.success(res.message || "Settings updated");
-        queryClient.invalidateQueries({ queryKey: ["/settings/profile", token] });
+        queryClient.invalidateQueries({
+          queryKey: ["/settings/profile", token],
+        });
         if (res.data) {
           queryClient.setQueryData(["/settings/profile", token], {
             status: true,
@@ -113,7 +116,8 @@ export default function SettingsPage() {
     const fd = new FormData();
     if (form.name) fd.append("name", form.name);
     if (form.phone_number) fd.append("phone_number", form.phone_number);
-    if (form.whatsapp_number) fd.append("whatsapp_number", form.whatsapp_number);
+    if (form.whatsapp_number)
+      fd.append("whatsapp_number", form.whatsapp_number);
     if (form.dob) fd.append("dob", form.dob);
     if (form.gender) fd.append("gender", form.gender);
     if (form.address) fd.append("address", form.address);
@@ -122,14 +126,16 @@ export default function SettingsPage() {
     mutation.mutate(fd);
   };
 
-  if (!token) return <div className="p-4">You must be logged in to access settings.</div>;
+  if (!token)
+    return <div className="p-4">You must be logged in to access settings.</div>;
 
   if (profileLoading) return <SettingsFormSkeleton />;
 
   if (profile && profile.is_verified === false) {
     return (
       <div className="p-6 flex items-center justify-center text-sm text-muted-foreground">
-        <Loader2 className="h-5 w-5 mr-2 animate-spin" /> Redirecting to verification...
+        <Loader2 className="h-5 w-5 mr-2 animate-spin" /> Redirecting to
+        verification...
       </div>
     );
   }
@@ -145,54 +151,68 @@ export default function SettingsPage() {
         ) : null}
       </div>
 
-      {profile?.profile_cover_picture ? (
-        <img
-          src={profile.profile_cover_picture}
-          alt="Cover"
-          className="h-32 w-full object-cover rounded-md border"
-        />
-      ) : null}
-
-      {profile?.profile_picture ? (
-        <img
-          src={profile.profile_picture}
-          alt="Profile"
-          className="h-20 w-20 rounded-full object-cover border"
-        />
-      ) : null}
-
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label className="text-sm">Name</Label>
-          <Input name="name" value={form.name} onChange={handleChange} className="h-10" />
+          <Input
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            className="h-10"
+          />
         </div>
 
         <div className="space-y-2">
           <Label className="text-sm">Email</Label>
-          <Input value={profile?.email || ""} readOnly className="h-10 bg-muted/40" />
+          <Input
+            value={profile?.email || ""}
+            readOnly
+            className="h-10 bg-muted/40"
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label className="text-sm">Phone number</Label>
-            <Input name="phone_number" value={form.phone_number} onChange={handleChange} className="h-10" />
+            <Input
+              name="phone_number"
+              value={form.phone_number}
+              onChange={handleChange}
+              className="h-10"
+            />
           </div>
 
           <div className="space-y-2">
             <Label className="text-sm">WhatsApp number</Label>
-            <Input name="whatsapp_number" value={form.whatsapp_number} onChange={handleChange} className="h-10" />
+            <Input
+              name="whatsapp_number"
+              value={form.whatsapp_number}
+              onChange={handleChange}
+              className="h-10"
+            />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label className="text-sm">Date of birth</Label>
-            <Input type="date" name="dob" value={form.dob} onChange={handleChange} className="h-10" />
+            <Input
+              type="date"
+              name="dob"
+              value={form.dob}
+              onChange={handleChange}
+              className="h-10"
+            />
           </div>
 
           <div className="space-y-2">
             <Label className="text-sm">Gender</Label>
-            <select name="gender" value={form.gender} onChange={handleChange} className="mt-1 block w-full rounded-md border bg-transparent px-3 py-2 text-sm">
+            <select
+              name="gender"
+              value={form.gender}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border bg-transparent px-3 py-2 text-sm"
+            >
               <option value="">Select gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
@@ -202,9 +222,17 @@ export default function SettingsPage() {
 
           <div className="space-y-2">
             <Label className="text-sm">Country</Label>
-            <Select value={form.country_id} onValueChange={(v) => setDraft((s) => ({ ...s, country_id: v }))} disabled={countriesLoading || countryOptions.length === 0}>
+            <Select
+              value={form.country_id}
+              onValueChange={(v) => setDraft((s) => ({ ...s, country_id: v }))}
+              disabled={countriesLoading || countryOptions.length === 0}
+            >
               <SelectTrigger className="w-full h-10 text-sm">
-                <SelectValue placeholder={countriesLoading ? "Loading countries..." : "Select Country"} />
+                <SelectValue
+                  placeholder={
+                    countriesLoading ? "Loading countries..." : "Select Country"
+                  }
+                />
               </SelectTrigger>
               <SelectContent className="max-h-[280px]">
                 {countryOptions.map((c) => (
@@ -219,14 +247,25 @@ export default function SettingsPage() {
 
         <div className="space-y-2">
           <Label className="text-sm">Address</Label>
-          <Input name="address" value={form.address} onChange={handleChange} className="h-10" />
+          <Input
+            name="address"
+            value={form.address}
+            onChange={handleChange}
+            className="h-10"
+          />
         </div>
 
         <div className="flex items-center gap-3">
-          <Button type="submit" variant="default" size="default" disabled={mutation.isLoading}>
+          <Button
+            type="submit"
+            variant="default"
+            size="default"
+            disabled={mutation.isLoading}
+          >
             {mutation.isLoading ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin text-white" /> Saving...
+                <Loader2 className="h-4 w-4 mr-2 animate-spin text-white" />{" "}
+                Saving...
               </>
             ) : (
               "Save Changes"

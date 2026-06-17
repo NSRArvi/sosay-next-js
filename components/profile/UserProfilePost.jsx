@@ -5,13 +5,10 @@ import PostCardSkeletonList from "../feed/PostCardSkletonList";
 import PostCard from "../feed/PostCard";
 
 export default function UserProfilePost({ id }) {
-  const { accessToken, userInfo } = useAppContext();
+  const { accessToken } = useAppContext();
   // Fetch personal posts
   const { data, isLoading, error } = useQuery({
-    queryKey: [
-      `/feed_management/private/feeds/all/post/${id}`,
-      accessToken,
-    ],
+    queryKey: [`/feed_management/private/feeds/all/post/${id}`, accessToken],
     queryFn: fetchWithToken,
     enabled: !!accessToken,
   });
@@ -25,9 +22,13 @@ export default function UserProfilePost({ id }) {
 
   return (
     <div>
-      {posts.map((post, i) => (
-        <PostCard key={i} post={post} />
-      ))}
+      {posts.length === 0 ? (
+        <div className="text-center mt-10 h-60 bg-gray-100 flex justify-center items-center rounded-xl">
+          No post yet
+        </div>
+      ) : (
+        posts.map((post, i) => <PostCard key={i} post={post} />)
+      )}
     </div>
   );
 }

@@ -6,13 +6,11 @@ import { fetchWithToken } from "@/helpers/api";
 import { useAppContext } from "@/context/context";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, Play, Users, Wallet } from "lucide-react";
+import { Upload, Play } from "lucide-react";
 import PublicReelsTab from "@/components/reels/PublicReelsTab";
 import MyReelsTab from "@/components/reels/MyReelsTab";
 import ReelsViewer from "@/components/reels/ReelsViewer";
 import UploadReelDialog from "@/components/reels/UploadReelDialog";
-import FansTab from "@/components/reels/FansTab";
-import WalletTab from "@/components/reels/WalletTab";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
 
@@ -150,20 +148,6 @@ export default function ReelsPage() {
             <Upload className="h-4 w-4" />
             <span>My Reels</span>
           </TabsTrigger>
-          {/* <TabsTrigger
-            value="fans"
-            className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-pink-100 dark:data-[state=active]:bg-pink-900 data-[state=active]:text-pink-700 dark:data-[state=active]:text-pink-100 cursor-pointer"
-          >
-            <Users className="h-4 w-4" />
-            <span>Fans</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="wallet"
-            className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-green-100 dark:data-[state=active]:bg-green-900 data-[state=active]:text-green-700 dark:data-[state=active]:text-green-100 cursor-pointer"
-          >
-            <Wallet className="h-4 w-4" />
-            <span>Wallet</span>
-          </TabsTrigger> */}
         </TabsList>
 
         {/* Reels Tab (Public Feed) */}
@@ -190,38 +174,6 @@ export default function ReelsPage() {
             accessToken={accessToken}
             onReelDeleted={handleReelDeleted}
             onUploadClick={() => setOpenUploadDialog(true)}
-          />
-        </TabsContent>
-
-        {/* Fans Tab */}
-        <TabsContent value="fans" className="space-y-6">
-          <FansTab
-            fans={[
-              // Sample data - replace with actual API data
-              {
-                id: 1,
-                name: "John Doe",
-                profileImage: "/images/profile-1.jpg",
-                subscribedDate: "2024-01-15",
-                isPremium: true,
-              },
-            ]}
-            stats={{
-              totalFans: 1250,
-              premiumSubscribers: 340,
-              newThisMonth: 89,
-            }}
-          />
-        </TabsContent>
-
-        {/* Wallet Tab */}
-        <TabsContent value="wallet" className="space-y-6">
-          <WalletTab
-            wallet={{
-              availableBalance: 2450.5,
-              pendingPayout: 150.25,
-              nextPayout: "2024-06-15",
-            }}
           />
         </TabsContent>
       </Tabs>

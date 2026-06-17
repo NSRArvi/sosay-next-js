@@ -12,6 +12,7 @@ import {
   LogOut,
   BriefcaseBusiness,
   Search,
+  Tv,
 } from "lucide-react";
 import clsx from "clsx";
 import Link from "next/link";
@@ -46,13 +47,14 @@ export default function AppSidebar({ isOpen, onClose }) {
       count: totalUnread,
     },
     { name: "Friends", icon: Users, href: "/app/friends" },
-    { name: "Reels", icon: Video, href: "/app/reels" },
     { name: "Search", icon: Search, href: "/app/search" },
+    { name: "Reels", icon: Video, href: "/app/reels" },
+    { name: "Contents", icon: Tv, href: "/app/content" },
     { name: "SPUMP Market", icon: Store, href: "/app/shop" },
     { name: "Ads Manager", icon: BriefcaseBusiness, href: "/app/ads-manager" },
     // { name: "Pages", icon: Layers, href: "/app/pages" },
     // { name: "Bookmark", icon: Bookmark, href: "/app/bookmark" },
-    // { name: "Notifications", icon: Bell, href: "/app/notifications" },
+    { name: "Notifications", icon: Bell, href: "/app/notifications" },
     { name: "Settings", icon: Settings, href: "/app/settings" },
   ];
   return (
