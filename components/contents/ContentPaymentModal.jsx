@@ -27,29 +27,27 @@ import {
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
-
-
 // ── Success screen ────────────────────────────────────────────────────────────
-function PaymentSuccess({ campaignId, totalBudget, onClose }) {
+function PaymentSuccess({ price, onClose }) {
   return (
     <div className="flex flex-col items-center justify-center py-6 gap-4 text-center">
-      <div className="rounded-full bg-green-100 dark:bg-green-900/30 p-4">
-        <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400" />
+      <div className="rounded-full bg-green-100 p-4">
+        <CheckCircle2 className="h-12 w-12 text-green-600" />
       </div>
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+        <h3 className="text-lg font-semibold text-gray-900">
           Payment Successful!
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Campaign #{campaignId} is now active.
+        <p className="text-sm text-gray-500 mt-1">
+          You are now subscribed.
         </p>
-        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-3">
-          ${parseFloat(totalBudget).toFixed(2)} paid
+        <p className="text-2xl font-bold text-gray-900 mt-3">
+          ${parseFloat(price).toFixed(2)} paid
         </p>
       </div>
       <Button
         onClick={onClose}
-        className="w-full bg-secondary hover:bg-secondary/90 mt-2"
+        className="w-full bg-blue-600 hover:bg-blue-700 mt-2 text-white"
       >
         Done
       </Button>
@@ -61,24 +59,24 @@ function PaymentSuccess({ campaignId, totalBudget, onClose }) {
 function PaymentError({ message, onRetry, onClose }) {
   return (
     <div className="flex flex-col items-center justify-center py-6 gap-4 text-center">
-      <div className="rounded-full bg-red-100 dark:bg-red-900/30 p-4">
-        <XCircle className="h-12 w-12 text-red-500 dark:text-red-400" />
+      <div className="rounded-full bg-red-100 p-4">
+        <XCircle className="h-12 w-12 text-red-500" />
       </div>
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+        <h3 className="text-lg font-semibold text-gray-900">
           Payment Failed
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xs">
+        <p className="text-sm text-gray-500 mt-1 max-w-xs">
           {message || "Something went wrong. Please try again."}
         </p>
       </div>
       <div className="flex gap-3 w-full mt-2">
-        <Button variant="outline" onClick={onClose} className="flex-1">
+        <Button variant="outline" onClick={onClose} className="flex-1 cursor-pointer">
           Cancel
         </Button>
         <Button
           onClick={onRetry}
-          className="flex-1 bg-secondary hover:bg-secondary/90"
+          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
         >
           Try Again
         </Button>
@@ -88,7 +86,7 @@ function PaymentError({ message, onRetry, onClose }) {
 }
 
 // ── Checkout form (rendered inside <Elements>) ────────────────────────────────
-function CheckoutForm({ campaignId, totalBudget, onSuccess, onError }) {
+function CheckoutForm({ price, onSuccess, onError }) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -123,25 +121,25 @@ function CheckoutForm({ campaignId, totalBudget, onSuccess, onError }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Amount summary */}
-      <div className="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-gray-800/60 px-4 py-3 border border-gray-200 dark:border-gray-700">
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          Campaign #{campaignId} · Total
+      <div className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3 border border-gray-200">
+        <span className="text-sm text-gray-500">
+          Subscription Total
         </span>
-        <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
-          ${parseFloat(totalBudget).toFixed(2)}
+        <span className="text-xl font-bold text-gray-900">
+          ${parseFloat(price).toFixed(2)}
         </span>
       </div>
 
       {/* Stripe Payment Element */}
-      <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+      <div className="rounded-lg border border-gray-200 p-4">
         <PaymentElement options={{ layout: "tabs" }} />
       </div>
 
       {/* Inline field error */}
       {fieldError && (
-        <div className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3">
+        <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 px-4 py-3">
           <X className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
-          <p className="text-sm text-red-700 dark:text-red-400">{fieldError}</p>
+          <p className="text-sm text-red-700">{fieldError}</p>
         </div>
       )}
 
@@ -150,7 +148,7 @@ function CheckoutForm({ campaignId, totalBudget, onSuccess, onError }) {
         <Button
           type="submit"
           disabled={!stripe || !elements || isProcessing}
-          className="w-full bg-secondary hover:bg-secondary/90 h-11 text-base font-semibold"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white h-11 text-base font-semibold cursor-pointer"
         >
           {isProcessing ? (
             <>
@@ -160,7 +158,7 @@ function CheckoutForm({ campaignId, totalBudget, onSuccess, onError }) {
           ) : (
             <>
               <CreditCard className="mr-2 h-4 w-4" />
-              Pay ${parseFloat(totalBudget).toFixed(2)}
+              Pay ${parseFloat(price).toFixed(2)}
             </>
           )}
         </Button>
@@ -175,11 +173,12 @@ function CheckoutForm({ campaignId, totalBudget, onSuccess, onError }) {
 
 // ── Modal shell ───────────────────────────────────────────────────────────────
 // step: "loading" | "form" | "success" | "error" | "intent_error"
-export default function PaymentModal({ campaign, accessToken, open, onClose }) {
+export default function ContentPaymentModal({ creatorId, accessToken, open, onClose, onSuccessCallback }) {
   const queryClient = useQueryClient();
   const [step, setStep] = useState("loading");
   const [clientSecret, setClientSecret] = useState(null);
-  const [totalBudget, setTotalBudget] = useState(null);
+  const [price, setPrice] = useState(0);
+  const [subscriptionId, setSubscriptionId] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
 
   const fetchIntent = () => {
@@ -188,7 +187,7 @@ export default function PaymentModal({ campaign, accessToken, open, onClose }) {
     setErrorMessage("");
 
     fetch(
-      `${process.env.NEXT_PUBLIC_API_DEV_URL}/ads/campaigns/${campaign.id}/create-payment-intent`,
+      `${process.env.NEXT_PUBLIC_API_DEV_URL}/contents/creators/${creatorId}/create-payment-intent`,
       {
         method: "POST",
         headers: {
@@ -202,7 +201,8 @@ export default function PaymentModal({ campaign, accessToken, open, onClose }) {
       .then((data) => {
         if (data.status && data.data?.clientSecret) {
           setClientSecret(data.data.clientSecret);
-          setTotalBudget(data.data.total_budget);
+          setPrice(data.data.subscription_price);
+          setSubscriptionId(data.data.subscription_id);
           setStep("form");
         } else {
           setErrorMessage(data.message || "Could not initialise payment.");
@@ -217,14 +217,14 @@ export default function PaymentModal({ campaign, accessToken, open, onClose }) {
 
   // Re-fetch intent each time the modal opens
   useEffect(() => {
-    if (!open || !campaign) return;
+    if (!open || !creatorId) return;
     fetchIntent();
-  }, [open, campaign]);
+  }, [open, creatorId]);
 
-  const activateCampaign = async (campaignId) => {
+  const activateSubscription = async (subId) => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_DEV_URL}/ads/campaigns/${campaignId}/activate`,
+        `${process.env.NEXT_PUBLIC_API_DEV_URL}/contents/subscriptions/${subId}/activate`,
         {
           method: "POST",
           headers: {
@@ -236,16 +236,22 @@ export default function PaymentModal({ campaign, accessToken, open, onClose }) {
       );
       const data = await res.json();
       if (data.status) {
-        queryClient.invalidateQueries(["/ads/campaigns/me", accessToken]);
+        queryClient.invalidateQueries({ queryKey: ["/contents"] });
+        queryClient.invalidateQueries({ queryKey: ["/contents/creators"] });
+        if (onSuccessCallback) {
+          onSuccessCallback();
+        }
       }
     } catch {
-      // silent fail — payment already succeeded
+      // silent fail
     }
   };
 
   const handleSuccess = () => {
     setStep("success");
-    activateCampaign(campaign.id);
+    if (subscriptionId) {
+      activateSubscription(subscriptionId);
+    }
   };
 
   const handlePaymentError = (msg) => {
@@ -276,11 +282,11 @@ export default function PaymentModal({ campaign, accessToken, open, onClose }) {
         {step !== "success" && step !== "error" && step !== "intent_error" && (
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-secondary" />
-              Complete Payment
+              <CreditCard className="h-5 w-5 text-blue-600" />
+              Subscribe to Creator
             </DialogTitle>
             <DialogDescription>
-              Campaign #{campaign?.id} · Enter your card details below
+              Enter your card details below to subscribe and unlock content
             </DialogDescription>
           </DialogHeader>
         )}
@@ -288,7 +294,7 @@ export default function PaymentModal({ campaign, accessToken, open, onClose }) {
         {/* Loading intent */}
         {step === "loading" && (
           <div className="flex flex-col items-center justify-center py-10 gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-secondary" />
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
             <p className="text-sm text-gray-500">Preparing payment…</p>
           </div>
         )}
@@ -306,8 +312,7 @@ export default function PaymentModal({ campaign, accessToken, open, onClose }) {
         {step === "form" && clientSecret && (
           <Elements stripe={stripePromise} options={elementsOptions}>
             <CheckoutForm
-              campaignId={campaign.id}
-              totalBudget={totalBudget ?? campaign.total_budget}
+              price={price}
               onSuccess={handleSuccess}
               onError={handlePaymentError}
             />
@@ -317,8 +322,7 @@ export default function PaymentModal({ campaign, accessToken, open, onClose }) {
         {/* Success screen */}
         {step === "success" && (
           <PaymentSuccess
-            campaignId={campaign.id}
-            totalBudget={totalBudget ?? campaign.total_budget}
+            price={price}
             onClose={handleClose}
           />
         )}

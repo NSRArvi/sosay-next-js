@@ -60,14 +60,14 @@ export default function ContentPage() {
             className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-blue-100 dark:data-[state=active]:bg-blue-900 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-100 cursor-pointer"
           >
             <Tv className="h-4 w-4" />
-            <span>Content</span>
+            <span>Contents</span>
           </TabsTrigger>
           <TabsTrigger
             value="my-content"
             className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-purple-100 dark:data-[state=active]:bg-purple-900 data-[state=active]:text-purple-700 dark:data-[state=active]:text-purple-100 cursor-pointer"
           >
             <Play className="h-4 w-4" />
-            <span>My Content</span>
+            <span>My Contents</span>
           </TabsTrigger>
           <TabsTrigger
             value="fans"
@@ -86,19 +86,22 @@ export default function ContentPage() {
         </TabsList>
 
         <TabsContent value="content" className="space-y-6">
-          <ContentTab accessToken={accessToken} onContentClick={setActiveContentId} />
+          <ContentTab
+            accessToken={accessToken}
+            onContentClick={setActiveContentId}
+          />
         </TabsContent>
 
         <TabsContent value="my-content" className="space-y-6">
-          <MyContentTab 
-            accessToken={accessToken} 
+          <MyContentTab
+            accessToken={accessToken}
             onUploadClick={() => setOpenUploadDialog(true)}
             onContentClick={setActiveContentId}
           />
         </TabsContent>
 
         <TabsContent value="fans" className="space-y-6">
-          <FansTab />
+          <FansTab accessToken={accessToken} />
         </TabsContent>
 
         <TabsContent value="dashboard" className="space-y-6">

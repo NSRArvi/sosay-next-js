@@ -1,14 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchWithToken } from "@/helpers/api";
 import { Loader2, Crown, User, ArrowLeft, Play, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import ContentReactionButton from "./ContentReactionButton";
 import ContentCommentForm from "./ContentCommentForm";
+import ContentPaymentModal from "./ContentPaymentModal";
 
 export default function ContentDetails({ contentId, onBack, onContentClick, accessToken }) {
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+
   // Fetch content details
   const { data: contentData, isLoading: isContentLoading } = useQuery({
     queryKey: ["/contents", contentId],
@@ -112,12 +116,24 @@ export default function ContentDetails({ contentId, onBack, onContentClick, acce
               </div>
             </div>
             {creatorProfile && (
-              <Button 
-                variant={isSubscribed ? "outline" : "default"}
-                className={!isSubscribed ? "bg-blue-600 text-white hover:bg-blue-700 w-full sm:w-auto shadow-sm" : "w-full sm:w-auto"}
-              >
-                {isSubscribed ? "Subscribed" : `Subscribe for $${creatorProfile.subscription_price}`}
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Button variant="outline" className="w-full sm:w-auto bg-white shadow-sm" asChild>
+                  <Link href={`/app/profile/${content.user?.id}`}>
+                    View Profile
+                  </Link>
+                </Button>
+                <Button 
+                  variant={isSubscribed ? "outline" : "default"}
+                  className={!isSubscribed ? "bg-blue-600 text-white hover:bg-blue-700 w-full sm:w-auto shadow-sm" : "w-full sm:w-auto"}
+                  onClick={() => {
+                    if (!isSubscribed) {
+                      setPaymentModalOpen(true);
+                    }
+                  }}
+                >
+                  {isSubscribed ? "Subscribed" : `Subscribe for $${creatorProfile.subscription_price}`}
+                </Button>
+              </div>
             )}
           </div>
 
@@ -221,6 +237,13 @@ export default function ContentDetails({ contentId, onBack, onContentClick, acce
           )}
         </div>
       </div>
+
+      <ContentPaymentModal
+        creatorId={creatorId}
+        accessToken={accessToken}
+        open={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+      />
     </div>
   );
 }

@@ -112,6 +112,9 @@ export default function DashboardTab() {
                     placeholder="e.g. 15.00"
                     required
                   />
+                  <label className="block text-xs font-medium text-secondary dark:text-gray-300 mt-1">
+                    System will take 10% of your subscription fee.
+                  </label>
                 </div>
 
                 <div>
@@ -154,9 +157,9 @@ export default function DashboardTab() {
                 {data?.data?.bio || "No bio added yet."}
               </p>
 
-              <div className="mt-4 inline-flex items-center px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg font-medium border border-blue-100 dark:border-blue-800/50">
+              <div className="mt-4 inline-flex items-center text-sm px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg font-medium border border-blue-100 dark:border-blue-800/50">
                 <span className="mr-2">Subscription:</span>
-                <span className="text-xl font-bold">
+                <span className="text-lg font-bold">
                   ${data?.data?.subscription_price || "0.00"}
                 </span>
                 <span className="text-sm font-normal ml-1 opacity-80">
