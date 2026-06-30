@@ -3,11 +3,12 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, Play, Users, LayoutDashboard, Tv } from "lucide-react";
+import { Upload, Play, Users, LayoutDashboard, Tv, Star } from "lucide-react";
 import ContentTab from "@/components/contents/ContentTab";
 import MyContentTab from "@/components/contents/MyContentTab";
 import FansTab from "@/components/contents/FansTab";
 import DashboardTab from "@/components/contents/DashboardTab";
+import MyCreatorsTab from "@/components/contents/MyCreatorsTab";
 import UploadContentDialog from "@/components/contents/UploadContentDialog";
 import ContentDetails from "@/components/contents/ContentDetails";
 import { useAppContext } from "@/context/context";
@@ -77,6 +78,13 @@ export default function ContentPage() {
             <span>Fans</span>
           </TabsTrigger>
           <TabsTrigger
+            value="my-creators"
+            className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-yellow-100 dark:data-[state=active]:bg-yellow-900 data-[state=active]:text-yellow-700 dark:data-[state=active]:text-yellow-100 cursor-pointer"
+          >
+            <Star className="h-4 w-4" />
+            <span>My Creators</span>
+          </TabsTrigger>
+          <TabsTrigger
             value="dashboard"
             className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-green-100 dark:data-[state=active]:bg-green-900 data-[state=active]:text-green-700 dark:data-[state=active]:text-green-100 cursor-pointer"
           >
@@ -102,6 +110,10 @@ export default function ContentPage() {
 
         <TabsContent value="fans" className="space-y-6">
           <FansTab accessToken={accessToken} />
+        </TabsContent>
+
+        <TabsContent value="my-creators" className="space-y-6">
+          <MyCreatorsTab accessToken={accessToken} />
         </TabsContent>
 
         <TabsContent value="dashboard" className="space-y-6">

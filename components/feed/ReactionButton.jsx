@@ -10,7 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-const REACTIONS = {
+export const REACTIONS = {
   like: { icon: ThumbsUp, label: "Like", color: "text-blue-500" },
   love: { icon: Heart, label: "Love", color: "text-pink-500" },
   haha: { icon: Laugh, label: "Haha", color: "text-yellow-500" },
@@ -24,14 +24,16 @@ export default function ReactionButton({ post, showLabel = true }) {
   const queryClient = useQueryClient();
   const [showReactions, setShowReactions] = useState(false);
   const [optimisticReaction, setOptimisticReaction] = useState(
-    post?.current_user_reaction || null
+    post?.current_user_reaction || null,
   );
-  const [optimisticCount, setOptimisticCount] = useState(post?.reactions_count || 0);
+  const [optimisticCount, setOptimisticCount] = useState(
+    post?.reactions_count || 0,
+  );
 
   const currentReaction = optimisticReaction;
   const CurrentIcon = currentReaction
     ? REACTIONS[currentReaction]?.icon
-    : Heart;
+    : ThumbsUp;
   const currentColor = currentReaction
     ? REACTIONS[currentReaction]?.color
     : "text-gray-600";
@@ -45,7 +47,7 @@ export default function ReactionButton({ post, showLabel = true }) {
       return await postWithToken(
         `/feed_management/private/posts/${post.id}/react`,
         formData,
-        accessToken
+        accessToken,
       );
     },
     onMutate: ({ nextReaction, nextCount }) => {
@@ -119,9 +121,7 @@ export default function ReactionButton({ post, showLabel = true }) {
             />
             {showLabel && (
               <span className="text-sm hidden md:block">
-                {currentReaction
-                  ? REACTIONS[currentReaction]?.label
-                  : "Like"}
+                {currentReaction ? REACTIONS[currentReaction]?.label : "Like"}
               </span>
             )}
           </button>

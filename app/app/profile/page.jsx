@@ -4,8 +4,7 @@ import { useAppContext } from "@/context/context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchWithToken, postWithToken, putWithToken } from "@/helpers/api";
 import toast from "react-hot-toast";
-import { Loader2, Camera } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Camera } from "lucide-react";
 import ProfilePost from "@/components/profile/ProfilePost";
 import ProfilePictureDialog from "@/components/profile/ProfilePictureDialog";
 import CoverPictureDialog from "@/components/profile/CoverPictureDialog";
@@ -38,6 +37,16 @@ export default function ProfilePage() {
       enabled: !!accessToken,
     },
   );
+
+  // Fetch profile stats
+  const { data: profileStats, isLoading: profileStatsLoading } = useQuery({
+    queryKey: [`users/${userInfo.id}/stats`, accessToken],
+    queryFn: fetchWithToken,
+    enabled: !!accessToken,
+  });
+
+  const statsData = profileStats?.data;
+  console.log(statsData);
 
   // Fetch cover pictures
   const { data: coverPictures, isLoading: coverPicturesLoading } = useQuery({
@@ -291,11 +300,19 @@ export default function ProfilePage() {
             <div className="flex items-center gap-4 mt-2 text-sm">
               <p>
                 {" "}
-                <span className="font-semibold">10</span> Friends
+                <span className="font-semibold">
+                  {" "}
+                  {statsData?.posts_count | 0}{" "}
+                </span>{" "}
+                Posts
               </p>
               <p>
                 {" "}
-                <span className="font-semibold">5</span> Posts
+                <span className="font-semibold">
+                  {" "}
+                  {statsData?.friends_count || 0}{" "}
+                </span>{" "}
+                Friends
               </p>
 
               {/* check user verification status and show badge or link accordingly  */}

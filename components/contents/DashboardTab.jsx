@@ -25,6 +25,26 @@ export default function DashboardTab() {
     enabled: !!accessToken,
   });
 
+  const { data: stripeStatusData } = useQuery({
+    queryKey: ["/onboarding/status", accessToken],
+    queryFn: fetchWithToken,
+    enabled: !!accessToken,
+  });
+
+  const stripeOnboardMutation = useMutation({
+    mutationFn: () => postWithToken("/onboarding/url", {}, accessToken),
+    onSuccess: (res) => {
+      if (res.status && res.data?.url) {
+        window.location.href = res.data.url;
+      } else {
+        toast.error(res.message || "Failed to generate Stripe onboarding URL.");
+      }
+    },
+    onError: () => {
+      toast.error("An error occurred while connecting to Stripe.");
+    },
+  });
+
   useEffect(() => {
     if (data?.data) {
       setBio(data.data.bio || "");
@@ -166,6 +186,21 @@ export default function DashboardTab() {
                   / month
                 </span>
               </div>
+
+              {stripeStatusData && !stripeStatusData.data?.is_ready && (
+                <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg border border-yellow-200 dark:border-yellow-800/50">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
+                    Connect your Stripe account to start receiving payments.
+                  </p>
+                  <button
+                    onClick={() => stripeOnboardMutation.mutate()}
+                    disabled={stripeOnboardMutation.isLoading}
+                    className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+                  >
+                    {stripeOnboardMutation.isLoading ? "Connecting..." : "Connect Stripe"}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

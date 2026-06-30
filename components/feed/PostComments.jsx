@@ -67,10 +67,10 @@ export default function PostComments({ post, allMedia }) {
   // Check permissions
   const isPostOwner = post?.user_id === userInfo?.id;
   const isCommentOwner = (comment) => comment?.user_id === userInfo?.id;
-  
+
   // Can edit: Only if user is the comment author
   const canEditComment = (comment) => isCommentOwner(comment);
-  
+
   // Can delete: If user is comment author OR post owner
   const canDeleteComment = (comment) => isCommentOwner(comment) || isPostOwner;
 
@@ -84,7 +84,7 @@ export default function PostComments({ post, allMedia }) {
       return await postWithToken(
         `/feed_management/private/posts/${postId}/comments`,
         formData,
-        accessToken
+        accessToken,
       );
     },
     onSuccess: (data) => {
@@ -118,7 +118,7 @@ export default function PostComments({ post, allMedia }) {
       return await postWithToken(
         `/feed_management/private/comments/${commentId}`,
         formData,
-        accessToken
+        accessToken,
       );
     },
     onSuccess: (data) => {
@@ -150,7 +150,7 @@ export default function PostComments({ post, allMedia }) {
       return await postWithToken(
         `/feed_management/private/comments/${commentId}`,
         formData,
-        accessToken
+        accessToken,
       );
     },
     onSuccess: (data) => {
@@ -233,7 +233,7 @@ export default function PostComments({ post, allMedia }) {
       >
         <Link href={`/app/profile/${comment?.user?.id}`}>
           <Avatar className="h-8 w-8 shrink-0 cursor-pointer">
-            <AvatarImage src={comment?.user?.profile_image} />
+            <AvatarImage src={comment?.user?.profile_picture} />
             <AvatarFallback className="bg-linear-to-br from-secondary to-purple-600 text-white text-sm font-semibold">
               {getUserInitials(comment?.user?.name)}
             </AvatarFallback>
@@ -294,7 +294,10 @@ export default function PostComments({ post, allMedia }) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {showEditOption && (
-                      <DropdownMenuItem onClick={() => startEdit(comment)} className="cursor-pointer">
+                      <DropdownMenuItem
+                        onClick={() => startEdit(comment)}
+                        className="cursor-pointer"
+                      >
                         <Edit2 size={14} className="mr-2" />
                         Edit
                       </DropdownMenuItem>

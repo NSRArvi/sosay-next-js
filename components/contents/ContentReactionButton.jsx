@@ -24,14 +24,14 @@ export default function ContentReactionButton({
   contentId,
   initialReaction = null,
   initialCount = 0,
-  accessToken
+  accessToken,
 }) {
   const queryClient = useQueryClient();
   const [showReactions, setShowReactions] = useState(false);
   const [reaction, setReaction] = useState(initialReaction);
   const [reactionCount, setReactionCount] = useState(initialCount);
 
-  const CurrentIcon = reaction ? REACTIONS[reaction]?.icon : Heart;
+  const CurrentIcon = reaction ? REACTIONS[reaction]?.icon : ThumbsUp;
   const currentColor = reaction ? REACTIONS[reaction]?.color : "text-gray-500";
 
   const reactMutation = useMutation({
@@ -95,9 +95,11 @@ export default function ContentReactionButton({
           disabled={reactMutation.isPending}
         >
           <CurrentIcon
-            className={`h-4 w-4 ${reaction ? "fill-current" : ""} ${currentColor}`}
+            className={`h-4 w-4 ${reaction ? "fill" : ""} ${currentColor}`}
           />
-          <span className="text-sm font-medium text-gray-700">{reactionCount}</span>
+          <span className="text-sm font-medium text-gray-700">
+            {reactionCount}
+          </span>
         </button>
       </PopoverTrigger>
       <PopoverContent

@@ -8,7 +8,7 @@ import {
 
 import Link from "next/link";
 
-import { useEffect, useRef, useState } from "react"; // <-- Added hooks
+import { useEffect, useRef, useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
@@ -34,6 +34,8 @@ import MediaSwiper from "./MediaSwiper";
 import ReactionButton from "./ReactionButton";
 
 import PostContent from "./PostContent";
+
+import ReactionSummary from "./ReactionSummary";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -272,23 +274,7 @@ export default function PostCard({ post }) {
 
       {/* Reactions Summary */}
 
-      {post?.reactions_count > 0 && (
-        <div className="flex items-center gap-2 mb-2 text-xs text-gray-600 overflow-x-auto">
-          {post?.reaction_counts && (
-            <div className="flex items-center gap-1 flex-wrap">
-              {Object.entries(post.reaction_counts).map(([type, count]) => (
-                <span
-                  key={type}
-                  className="flex items-center gap-1 whitespace-nowrap"
-                >
-                  <span className="capitalize">{type}</span>
-                  <span className="text-gray-400">({count})</span>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      <ReactionSummary post={post} />
 
       {/* Actions */}
       <Dialog>
