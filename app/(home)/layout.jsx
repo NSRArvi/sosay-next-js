@@ -1,13 +1,18 @@
+"use client";
 import Footer from "@/components/shared/Footer";
 import Navbar from "@/components/shared/Navbar";
 import React from "react";
+import { usePathname } from "next/navigation";
 
-export default function layout({ children }) {
+export default function Layout({ children }) {
+  const pathname = usePathname();
+  const hide = pathname === "/" || pathname === "/register";
+
   return (
     <div>
-      <Navbar />
+      {!hide && <Navbar />}
       {children}
-      <Footer />
+      {!hide && <Footer />}
     </div>
   );
 }

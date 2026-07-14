@@ -1,18 +1,23 @@
 import Link from "next/link";
 import React from "react";
-import { Clapperboard, Plus, SquarePen } from "lucide-react";
+import { Clapperboard, Plus, SquarePen, Tv2 } from "lucide-react";
 
 export default function CreateButtons() {
   const createLinks = [
     {
       href: "/app/create",
-      label: "Create Post",
+      label: "Post",
       icon: SquarePen,
     },
     {
       href: "/app/reels",
-      label: "Upload Reels",
+      label: "Reels",
       icon: Clapperboard,
+    },
+    {
+      href: "/app/content",
+      label: "Content",
+      icon: Tv2,
     },
   ];
 

@@ -1,4 +1,3 @@
-// FeedPage.jsx
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -138,7 +137,9 @@ export default function FeedPage() {
         </p>
       </div>
 
-      {showSuggestion && <SuggestionList setShowSuggestion={setShowSuggestion} />}
+      {showSuggestion && (
+        <SuggestionList setShowSuggestion={setShowSuggestion} />
+      )}
 
       <div>
         {allPosts.length === 0 && !isLoading ? (
@@ -181,7 +182,7 @@ export default function FeedPage() {
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 bg-secondary text-white p-3 rounded-full shadow-lg hover:bg-secondary/70 transition z-20"
+          className="hidden lg:block fixed bottom-6 right-6 bg-secondary text-white p-3 rounded-full shadow-lg hover:bg-secondary/70 transition z-20"
           title="Scroll to top"
         >
           <ChevronUp size={24} />

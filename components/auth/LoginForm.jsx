@@ -63,7 +63,7 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="lg:min-h-screen w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 relative overflow-hidden">
+    <div className="min-h-screen w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 relative overflow-hidden">
       {/* Subtle background pattern - responsive sizes */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-1/4 left-1/4 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 rounded-full bg-secondary"></div>
@@ -193,15 +193,6 @@ export default function LoginForm() {
               </motion.div>
             )}
 
-            {/* <Button
-              type="button"
-              variant="link"
-              onClick={() => setView(!view)}
-              className="text-xs sm:text-sm text-secondary hover:text-secondary/80 p-0 h-auto font-medium w-full text-left -mt-2"
-            >
-              {view ? "Use email instead" : "Use phone instead"}
-            </Button> */}
-
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm sm:text-base">
                 Password
@@ -257,14 +248,26 @@ export default function LoginForm() {
                 )}
               </Button>
             </motion.div>
+          </div>
 
-            <p className="text-xs sm:text-sm text-center text-gray-500 pt-2">
+          <div>
+            <p className="text-xs sm:text-sm text-center text-gray-500 pt-6 sm:pt-8">
               Don't have an account?{" "}
               <Link
                 href="/register"
                 className="text-destructive font-semibold hover:text-destructive/80 transition-colors"
               >
                 Sign up
+              </Link>
+            </p>
+
+            <p className="text-xs sm:text-sm text-center text-gray-500 mt-2">
+              Explore the smart features of{" "}
+              <Link
+                href="/home"
+                className="text-destructive font-semibold hover:text-destructive/80 transition-colors"
+              >
+                Sosay
               </Link>
             </p>
           </div>

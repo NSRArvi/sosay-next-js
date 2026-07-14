@@ -54,7 +54,7 @@ export default function AppSidebar({ isOpen, onClose }) {
     { name: "Ads Manager", icon: BriefcaseBusiness, href: "/app/ads-manager" },
     // { name: "Pages", icon: Layers, href: "/app/pages" },
     // { name: "Bookmark", icon: Bookmark, href: "/app/bookmark" },
-    { name: "Notifications", icon: Bell, href: "/app/notifications" },
+    // { name: "Notifications", icon: Bell, href: "/app/notifications" },
     { name: "Settings", icon: Settings, href: "/app/settings" },
   ];
   return (

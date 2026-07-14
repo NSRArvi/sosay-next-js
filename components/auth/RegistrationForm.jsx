@@ -197,7 +197,7 @@ export default function RegistrationForm() {
   ];
 
   return (
-    <div className="lg:min-h-screen w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 relative">
+    <div className="min-h-screen w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 relative">
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-1/4 left-1/4 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 rounded-full bg-secondary"></div>
@@ -293,15 +293,27 @@ export default function RegistrationForm() {
             />
           )}
 
-          <p className="text-xs sm:text-sm text-center text-gray-500 pt-6 sm:pt-8">
-            Already have an account?{" "}
-            <Link
-              href="/"
-              className="text-destructive font-semibold hover:text-destructive/80 transition-colors"
-            >
-              Login
-            </Link>
-          </p>
+          <div>
+            <p className="text-xs sm:text-sm text-center text-gray-500 pt-6 sm:pt-8">
+              Already have an account?{" "}
+              <Link
+                href="/"
+                className="text-destructive font-semibold hover:text-destructive/80 transition-colors"
+              >
+                Login
+              </Link>
+            </p>
+
+            <p className="text-xs sm:text-sm text-center text-gray-500 mt-2">
+              Explore the smart features of{" "}
+              <Link
+                href="/home"
+                className="text-destructive font-semibold hover:text-destructive/80 transition-colors"
+              >
+                Sosay
+              </Link>
+            </p>
+          </div>
         </div>
       </motion.div>
     </div>
