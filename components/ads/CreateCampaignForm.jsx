@@ -3,10 +3,22 @@ import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { postWithToken } from "@/helpers/api";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2, Zap } from "lucide-react";
 import toast from "react-hot-toast";
 import SearchablePostSelector from "./SearchablePostSelector";
@@ -16,6 +28,7 @@ export default function CreateCampaignForm({
   postsLoading,
   accessToken,
   userInfo,
+  countries,
 }) {
   const queryClient = useQueryClient();
 
@@ -39,7 +52,7 @@ export default function CreateCampaignForm({
       formData.append("boostable_id", boostableId);
       formData.append(
         "boostable_type",
-        "Modules\\FeedManagement\\app\\Models\\Post"
+        "Modules\\FeedManagement\\app\\Models\\Post",
       );
       formData.append("total_budget", totalBudget);
       formData.append("duration_days", durationDays);
@@ -187,15 +200,19 @@ export default function CreateCampaignForm({
             {/* Country */}
             <div className="space-y-2">
               <Label htmlFor="country">Target Country</Label>
-              <Select value={targetCountryId} onValueChange={setTargetCountryId}>
+              <Select
+                value={targetCountryId}
+                onValueChange={setTargetCountryId}
+              >
                 <SelectTrigger id="country" className="w-full">
                   <SelectValue placeholder="All countries" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">United States</SelectItem>
-                  <SelectItem value="2">United Kingdom</SelectItem>
-                  <SelectItem value="3">Canada</SelectItem>
-                  <SelectItem value="4">Australia</SelectItem>
+                  {countries.map((country) => (
+                    <SelectItem key={country.id} value={String(country.id)}>
+                      {country.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

@@ -1,7 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchWithToken } from "@/helpers/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,23 +17,43 @@ import ReelCard from "@/components/reels/ReelCard";
 import ReelCardSkleton from "@/components/reels/ReelCardSkleton";
 import { Play, Upload, Trash2, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_DEV_URL;
 
 export default function MyReelsTab({
-  reels,
-  isLoading,
-  pageMyReels,
-  paginationData,
-  onPageChange,
-  onReelClick,
   accessToken,
-  onReelDeleted,
+  onReelClick,
   onUploadClick,
 }) {
-  const [deletingId, setDeletingId] = React.useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
-  const [reelToDelete, setReelToDelete] = React.useState(null);
+  const [page, setPage] = useState(1);
+  const [deletingId, setDeletingId] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [reelToDelete, setReelToDelete] = useState(null);
+  const queryClient = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["/my-reels", accessToken, page],
+    queryFn: () =>
+      fetchWithToken({
+        queryKey: [`/my-reels?page=${page}`, accessToken],
+      }),
+    enabled: !!accessToken,
+    keepPreviousData: true,
+  });
+
+  const myReelsPayload = data?.data;
+  const reels = Array.isArray(myReelsPayload)
+    ? myReelsPayload
+    : Array.isArray(myReelsPayload?.data)
+      ? myReelsPayload.data
+      : [];
+  const paginationData = Array.isArray(myReelsPayload) ? null : myReelsPayload;
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleDeleteClick = (reelId, e) => {
     e.stopPropagation();
@@ -59,7 +81,7 @@ export default function MyReelsTab({
 
       if (data.status === true) {
         toast.success("Reel deleted successfully");
-        onReelDeleted();
+        queryClient.invalidateQueries({ queryKey: ["/my-reels"] });
       } else {
         toast.error(data.message || "Failed to delete reel");
       }
@@ -87,11 +109,10 @@ export default function MyReelsTab({
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <Play className="h-12 w-12 text-gray-300 mb-3" />
         <p className="text-gray-500 font-medium">No reels uploaded yet</p>
-        <p className="text-sm text-gray-400">Upload your first reel to get started</p>
-        <Button
-          onClick={onUploadClick}
-          className="mt-4 gap-2 cursor-pointer"
-        >
+        <p className="text-sm text-gray-400">
+          Upload your first reel to get started
+        </p>
+        <Button onClick={onUploadClick} className="mt-4 gap-2 cursor-pointer">
           <Upload className="h-4 w-4" />
           Upload Reel
         </Button>
@@ -100,7 +121,21 @@ export default function MyReelsTab({
   }
 
   return (
-    <>
+    <section className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-lg font-bold text-gray-800">My Reels</h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            {reels.length} item{reels.length !== 1 ? "s" : ""} listed
+          </p>
+        </div>
+        <Link
+          href="/app/reels"
+          className="cursor-pointer text-xs px-4 py-2 bg-secondary rounded-full text-white"
+        >
+          Explore Reels
+        </Link>
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {reels.map((reel, index) => (
           <div
@@ -130,8 +165,8 @@ export default function MyReelsTab({
         <div className="flex items-center justify-center gap-2 mt-8">
           <Button
             variant="outline"
-            onClick={() => onPageChange(pageMyReels - 1)}
-            disabled={pageMyReels === 1}
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 1}
             className="cursor-pointer"
           >
             Previous
@@ -143,8 +178,8 @@ export default function MyReelsTab({
             ).map((p) => (
               <Button
                 key={p}
-                variant={pageMyReels === p ? "default" : "outline"}
-                onClick={() => onPageChange(p)}
+                variant={page === p ? "default" : "outline"}
+                onClick={() => handlePageChange(p)}
                 className="w-10 h-10 p-0 cursor-pointer"
               >
                 {p}
@@ -153,8 +188,8 @@ export default function MyReelsTab({
           </div>
           <Button
             variant="outline"
-            onClick={() => onPageChange(pageMyReels + 1)}
-            disabled={pageMyReels === paginationData.last_page}
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page === paginationData.last_page}
             className="cursor-pointer"
           >
             Next
@@ -168,7 +203,8 @@ export default function MyReelsTab({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Reel?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this reel? This action cannot be undone.
+              Are you sure you want to delete this reel? This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex gap-3 justify-end">
@@ -184,6 +220,6 @@ export default function MyReelsTab({
           </div>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </section>
   );
 }

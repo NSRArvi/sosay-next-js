@@ -13,7 +13,7 @@ export default function page() {
     <section className="max-w-5xl mx-auto space-y-5 mt-14 md:mt-8 p-4">
       {!shopAvailable && <ShopHeader />}
       <Tabs defaultValue="marketplace">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center flex-wrap">
           <TabsList className="gap-2 bg-transparent p-0 mb-6">
             <TabsTrigger
               value="marketplace"
@@ -27,7 +27,7 @@ export default function page() {
               className="gap-2 rounded-full px-4 py-2 data-[state=active]:bg-purple-100 dark:data-[state=active]:bg-purple-900 data-[state=active]:text-purple-700 dark:data-[state=active]:text-purple-100 cursor-pointer"
             >
               <ShoppingBag className="h-4 w-4" />
-              <span>My Ads</span>
+              <span>My Listings</span>
             </TabsTrigger>
           </TabsList>
 

@@ -17,6 +17,7 @@ import ContentCard from "@/components/contents/ContentCard";
 import ContentCardSkeleton from "@/components/contents/ContentCardSkeleton";
 import { Play, Upload } from "lucide-react";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 export default function MyContentTab({
   accessToken,
@@ -96,11 +97,14 @@ export default function MyContentTab({
       const formData = new FormData();
       formData.append("_method", "DELETE");
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_DEV_URL}/contents/${contentToDelete}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${accessToken}` },
-        body: formData,
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_DEV_URL}/contents/${contentToDelete}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}` },
+          body: formData,
+        },
+      );
 
       const data = await res.json();
 
@@ -146,7 +150,22 @@ export default function MyContentTab({
   }
 
   return (
-    <>
+    <section className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-lg font-bold text-gray-800">My Contents</h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            {contents.length} item{contents.length !== 1 ? "s" : ""} listed
+          </p>
+        </div>
+
+        <Link
+          href="/app/content"
+          className="cursor-pointer text-xs px-4 py-2 bg-secondary rounded-full text-white"
+        >
+          Explore Contents
+        </Link>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {contents.map((content) => (
           <ContentCard
@@ -204,7 +223,8 @@ export default function MyContentTab({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Content?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this content? This action cannot be undone.
+              Are you sure you want to delete this content? This action cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex gap-3 justify-end">
@@ -220,6 +240,6 @@ export default function MyContentTab({
           </div>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </section>
   );
 }

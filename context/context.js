@@ -21,7 +21,7 @@ export const AppProvider = ({ children }) => {
     queryKey: ["/countries"],
     queryFn: async () => {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_DEV_URL || ""}/countries`
+        `${process.env.NEXT_PUBLIC_API_DEV_URL || ""}/countries`,
       );
       return response.json();
     },

@@ -12,6 +12,10 @@ import Image from "next/image";
 import defaultCover from "../../assets/designs/Welcome.png";
 import defaultProfile from "../../assets/designs/girl.png";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import MyReelsTab from "@/components/reels/MyReelsTab";
+import MyContentTab from "@/components/contents/MyContentTab";
+import UserShop from "@/components/shop/UserShop";
 
 export default function ProfilePage() {
   const { userInfo, setUserInfo, accessToken, isUserVerified } =
@@ -28,6 +32,28 @@ export default function ProfilePage() {
   );
   const [newProfileImage, setNewProfileImage] = useState(null);
   const [newCoverImage, setNewCoverImage] = useState(null);
+
+  const [activeTab, setActiveTab] = useState("Posts");
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
+
+  // Tabs button here
+  const Tabs = [
+    {
+      name: "Posts",
+    },
+    {
+      name: "Reels",
+    },
+    {
+      name: "Contents",
+    },
+    {
+      name: "Products",
+    },
+  ];
 
   // Fetch profile pictures
   const { data: profilePictures, isLoading: profilePicturesLoading } = useQuery(
@@ -46,7 +72,6 @@ export default function ProfilePage() {
   });
 
   const statsData = profileStats?.data;
-  console.log(statsData);
 
   // Fetch cover pictures
   const { data: coverPictures, isLoading: coverPicturesLoading } = useQuery({
@@ -336,8 +361,60 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Profile created posts */}
-      <ProfilePost />
+      {/* Tabs button here */}
+      <div className="flex gap-2 items-center mt-6 overflow-x-auto p-1 bg-gray-50/50 rounded-xl max-w-fit mx-auto md:mx-0">
+        {Tabs.map((tab) => {
+          const isActive = activeTab === tab.name;
+          return (
+            <button
+              key={tab.name}
+              onClick={() => handleTabChange(tab.name)}
+              className={`relative px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap rounded-lg z-10 ${
+                isActive ? "text-primary" : "text-gray-500 hover:text-gray-900"
+              }`}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="profile-active-tab"
+                  className="absolute inset-0 bg-white shadow-sm rounded-lg border border-gray-200/60 -z-10"
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
+              {tab.name}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Tabs content here */}
+      <div className="mt-6 min-h-[400px]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {activeTab === "Posts" && <ProfilePost />}
+            {activeTab === "Reels" && (
+              <MyReelsTab
+                accessToken={accessToken}
+                onReelClick={() => {}}
+                onUploadClick={() => {}}
+              />
+            )}
+            {activeTab === "Contents" && (
+              <MyContentTab
+                accessToken={accessToken}
+                onContentClick={() => {}}
+                onUploadClick={() => {}}
+              />
+            )}
+            {activeTab === "Products" && <UserShop />}
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
       {/* Profile Picture Dialog */}
       <ProfilePictureDialog

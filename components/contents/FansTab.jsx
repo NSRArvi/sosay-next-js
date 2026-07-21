@@ -42,7 +42,7 @@ function SubscriberSkeleton() {
   );
 }
 
-export default function FansTab({ accessToken }) {
+export default function FansTab({ accessToken, userInfo }) {
   const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
   const [bio, setBio] = useState("");
@@ -132,157 +132,182 @@ export default function FansTab({ accessToken }) {
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-10">
       {/* Dashboard Top Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Profile Card */}
-        <div className="md:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
-          <div className="p-6">
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  Creator Profile
-                </h2>
-                <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
-                  Tell your audience what makes your content special.
-                </p>
-              </div>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700 relative">
+        {/* Cover Image */}
+        <div className="h-48 md:h-64 w-full relative bg-gray-200 dark:bg-gray-700">
+          {userInfo?.user_cover_image ? (
+            <img
+              src={userInfo.user_cover_image}
+              alt="Cover"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-gray-700 dark:to-gray-600"></div>
+          )}
 
-              <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DialogTrigger asChild>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 text-blue-600 rounded-md hover:bg-blue-100 transition-colors shadow-sm text-sm font-medium dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                    <Pencil className="w-4 h-4" />
-                    Edit
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle className="text-xl">
-                      Edit Profile & Pricing
-                    </DialogTitle>
-                  </DialogHeader>
-                  <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                        Subscription Price ($)
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={subscriptionPrice}
-                        onChange={(e) => setSubscriptionPrice(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                        placeholder="0.00"
-                        required
-                      />
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Platform fee is 10%. You keep 90% of earnings.
-                      </p>
-                    </div>
+          {/* Edit Button overlay */}
+          <div className="absolute top-4 right-4 z-20">
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+              <DialogTrigger asChild>
+                <button className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur border border-gray-200/50 text-gray-700 rounded-full hover:bg-white transition-colors shadow-sm text-sm font-medium dark:bg-gray-900/80 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800">
+                  <Pencil className="w-4 h-4" />
+                  Edit Dashboard
+                </button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle className="text-xl">
+                    Update Dashboard
+                  </DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                      Subscription Price ($)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={subscriptionPrice}
+                      onChange={(e) => setSubscriptionPrice(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      placeholder="0.00"
+                      required
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Platform fee is 10%. You keep 90% of earnings.
+                    </p>
+                  </div>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                        Bio
-                      </label>
-                      <textarea
-                        value={bio}
-                        onChange={(e) => setBio(e.target.value)}
-                        rows={4}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"
-                        placeholder="Welcome to my premium feed! Here you'll find..."
-                        required
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                      Bio
+                    </label>
+                    <textarea
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                      rows={4}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"
+                      placeholder="Welcome to my premium feed! Here you'll find..."
+                      required
+                    />
+                  </div>
 
-                    <Button
-                      type="submit"
-                      disabled={updateMutation.isLoading}
-                      className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md disabled:opacity-50 transition-colors mt-4"
-                    >
-                      {updateMutation.isLoading
-                        ? "Saving changes..."
-                        : "Save Changes"}
-                    </Button>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            {isLoadingProfile ? (
-              <div className="space-y-3 animate-pulse">
-                <div className="h-4 bg-gray-100 rounded w-3/4"></div>
-                <div className="h-4 bg-gray-100 rounded w-1/2"></div>
-              </div>
-            ) : (
-              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 border border-gray-100 dark:border-gray-700/50">
-                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed text-sm">
-                  {profileData?.data?.bio ||
-                    "You haven't added a bio yet. Click 'Edit' to tell your audience about your premium content."}
-                </p>
-              </div>
-            )}
+                  <Button
+                    type="submit"
+                    disabled={updateMutation.isLoading}
+                    className="w-full py-2 bg-secondary hover:bg-secondary/95 text-white font-medium rounded-full disabled:opacity-50 transition-colors mt-4"
+                  >
+                    {updateMutation.isLoading
+                      ? "Saving changes..."
+                      : "Save Changes"}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
-        {/* Stats & Integrations Column */}
-        <div className="space-y-4">
-          {/* Subscription Price Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-6">
-            <h3 className="text-gray-500 dark:text-gray-400 font-medium text-sm mb-1">
-              Monthly Subscription
-            </h3>
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-3xl font-bold text-gray-900 dark:text-white">
-                ${profileData?.data?.subscription_price || "0.00"}
-              </span>
-              <span className="text-gray-500 text-sm font-medium">/mo</span>
-            </div>
-          </div>
-
-          {/* Stripe Card */}
-          {stripeStatusData && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden dark:bg-gray-800 dark:border-gray-700 p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Wallet className="w-5 h-5 text-gray-500" />
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Payouts
-                </h3>
-              </div>
-
-              {!stripeStatusData.data?.is_ready ? (
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    Connect your Stripe account to start receiving subscription earnings.
-                  </p>
-                  <button
-                    onClick={() => stripeOnboardMutation.mutate()}
-                    disabled={stripeOnboardMutation.isLoading}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50"
-                  >
-                    {stripeOnboardMutation.isLoading
-                      ? "Connecting..."
-                      : "Connect Stripe"}
-                  </button>
-                </div>
+        {/* Profile Info */}
+        <div className="px-6 pb-6 relative">
+          <div className="flex flex-col md:flex-row gap-6 mb-6 relative z-10">
+            {/* User Image */}
+            <div className="relative -mt-16 md:-mt-20 shrink-0">
+              {userInfo?.user_image ? (
+                <img
+                  src={userInfo.user_image}
+                  alt="Profile"
+                  className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-md bg-white"
+                />
               ) : (
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      Stripe is connected
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => stripeOnboardMutation.mutate()}
-                    disabled={stripeOnboardMutation.isLoading}
-                    className="w-full px-4 py-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
-                  >
-                    {stripeOnboardMutation.isLoading
-                      ? "Please wait..."
-                      : "Change Account"}
-                  </button>
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white dark:border-gray-800 shadow-md bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                  <User className="w-12 h-12 text-gray-400" />
                 </div>
               )}
             </div>
-          )}
+
+            {/* Name and Bio */}
+            <div className="flex-1 pb-2 md:pt-4">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                {userInfo?.name || "Creator"}
+              </h1>
+              {isLoadingProfile ? (
+                <div className="h-4 bg-gray-100 rounded w-1/2 mt-2 animate-pulse"></div>
+              ) : (
+                <p className="text-gray-600 dark:text-gray-300 mt-2 text-sm leading-relaxed max-w-2xl whitespace-pre-wrap">
+                  {profileData?.data?.bio ||
+                    "You haven't added a bio yet. Click 'Edit Profile' to tell your audience about your premium content."}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Pricing & Stripe Bottom Bar */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-gray-100 dark:border-gray-700/50">
+            {/* Subscription Info */}
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700/50">
+              <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                <DollarSign className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  Monthly Subscription
+                </p>
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                    ${profileData?.data?.subscription_price || "0.00"}
+                  </span>
+                  <span className="text-sm font-medium text-gray-500">/mo</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Stripe Info */}
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700/50">
+              <div
+                className={`w-12 h-12 rounded-full flex items-center justify-center ${stripeStatusData?.data?.is_ready ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" : "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400"}`}
+              >
+                <Wallet className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  Stripe Payouts
+                </p>
+                {stripeStatusData?.data?.is_ready ? (
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-1.5">
+                      <CheckCircle className="w-4 h-4 text-green-500" />{" "}
+                      Connected
+                    </span>
+                    <button
+                      onClick={() => stripeOnboardMutation.mutate()}
+                      disabled={stripeOnboardMutation.isLoading}
+                      className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 disabled:opacity-50"
+                    >
+                      {stripeOnboardMutation.isLoading
+                        ? "Changing..."
+                        : "Change Account"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-1.5">
+                      Not Connected
+                    </span>
+                    <button
+                      onClick={() => stripeOnboardMutation.mutate()}
+                      disabled={stripeOnboardMutation.isLoading}
+                      className="text-xs font-medium bg-yellow-500 text-white px-3 py-1 rounded-full hover:bg-yellow-600 transition-colors disabled:opacity-50"
+                    >
+                      {stripeOnboardMutation.isLoading
+                        ? "Connecting..."
+                        : "Connect"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

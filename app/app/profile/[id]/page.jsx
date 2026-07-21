@@ -14,6 +14,10 @@ import Chatpanel from "@/components/message/Chatpanel";
 import UserProfilePost from "@/components/profile/UserProfilePost";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
+import { motion, AnimatePresence } from "framer-motion";
+import UserProfileReels from "@/components/profile/UserProfileReels";
+import UserProfileContents from "@/components/profile/UserProfileContents";
+import UserProfileProducts from "@/components/profile/UserProfileProducts";
 
 function ProfilePicture({ src, onClick }) {
   const [isLoading, setIsLoading] = useState(Boolean(src));
@@ -58,6 +62,19 @@ export default function ProfilePage() {
   const [receiver, setReceiver] = useState(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  const [activeTab, setActiveTab] = useState("Posts");
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
+
+  const Tabs = [
+    { name: "Posts" },
+    { name: "Reels" },
+    { name: "Contents" },
+    { name: "Products" },
+  ];
 
   // Fetch profile data
   const { data: profile, isLoading: profileDataLoading } = useQuery({
@@ -135,7 +152,7 @@ export default function ProfilePage() {
   });
 
   const profileData = profile?.data;
-  console.log(profileData);
+
   const lightboxSlides = [
     ...(profileData?.profile_cover_picture
       ? [{ src: profileData.profile_cover_picture, alt: "Cover Image" }]
@@ -283,8 +300,48 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Profile created posts */}
-      <UserProfilePost id={id} />
+      {/* Tabs button here */}
+      <div className="flex gap-2 items-center mt-6 overflow-x-auto p-1 bg-gray-50/50 rounded-xl max-w-fit mx-auto md:mx-0">
+        {Tabs.map((tab) => {
+          const isActive = activeTab === tab.name;
+          return (
+            <button
+              key={tab.name}
+              onClick={() => handleTabChange(tab.name)}
+              className={`relative px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap rounded-lg z-10 ${
+                isActive ? "text-primary" : "text-gray-500 hover:text-gray-900"
+              }`}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="profile-id-active-tab"
+                  className="absolute inset-0 bg-white shadow-sm rounded-lg border border-gray-200/60 -z-10"
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
+              {tab.name}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Tabs content here */}
+      <div className="mt-6 min-h-[400px]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {activeTab === "Posts" && <UserProfilePost id={id} />}
+            {activeTab === "Reels" && <UserProfileReels id={id} />}
+            {activeTab === "Contents" && <UserProfileContents id={id} />}
+            {activeTab === "Products" && <UserProfileProducts id={id} />}
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
       {/* Chat Panel Dialog */}
       <Dialog open={openChatDialog} onOpenChange={setOpenChatDialog}>

@@ -3,14 +3,26 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchWithToken } from "@/helpers/api";
-import { Loader2, Crown, User, ArrowLeft, Play, MessageCircle } from "lucide-react";
+import {
+  Loader2,
+  Crown,
+  User,
+  ArrowLeft,
+  Play,
+  MessageCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import ContentReactionButton from "./ContentReactionButton";
 import ContentCommentForm from "./ContentCommentForm";
 import ContentPaymentModal from "./ContentPaymentModal";
 
-export default function ContentDetails({ contentId, onBack, onContentClick, accessToken }) {
+export default function ContentDetails({
+  contentId,
+  onBack,
+  onContentClick,
+  accessToken,
+}) {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
   // Fetch content details
@@ -52,7 +64,11 @@ export default function ContentDetails({ contentId, onBack, onContentClick, acce
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300 pb-10">
-      <Button variant="ghost" onClick={onBack} className="gap-2 -ml-4 text-gray-600 hover:text-gray-900">
+      <Button
+        variant="ghost"
+        onClick={onBack}
+        className="gap-2 -ml-4 text-gray-600 hover:text-gray-900"
+      >
         <ArrowLeft className="w-4 h-4" />
         Back
       </Button>
@@ -83,7 +99,7 @@ export default function ContentDetails({ contentId, onBack, onContentClick, acce
               )}
             </div>
             <div className="flex items-center gap-4 mt-3 text-sm text-gray-500 font-medium">
-              <ContentReactionButton 
+              <ContentReactionButton
                 contentId={content.id}
                 initialReaction={content.current_user_reaction}
                 initialCount={content.reactions_count}
@@ -101,37 +117,57 @@ export default function ContentDetails({ contentId, onBack, onContentClick, acce
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center shrink-0 border border-gray-200">
                 {content.user?.profile_picture ? (
-                  <img src={content.user.profile_picture} alt={content.user.name} className="w-full h-full object-cover" />
+                  <img
+                    src={content.user.profile_picture}
+                    alt={content.user.name}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <User className="w-6 h-6 text-gray-400" />
                 )}
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 text-base">{content.user?.name}</h3>
+                <h3 className="font-bold text-gray-900 text-base">
+                  {content.user?.name}
+                </h3>
                 {creatorProfile?.bio ? (
-                  <p className="text-sm text-gray-600 line-clamp-1 mt-0.5">{creatorProfile.bio}</p>
+                  <p className="text-xs text-gray-600 line-clamp-4 mt-0.5">
+                    {creatorProfile.bio}
+                  </p>
                 ) : (
-                  <p className="text-xs text-gray-500 mt-0.5">Content Creator</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Content Creator
+                  </p>
                 )}
               </div>
             </div>
             {creatorProfile && (
               <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <Button variant="outline" className="w-full sm:w-auto bg-white shadow-sm" asChild>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto bg-white rounded-full"
+                  asChild
+                >
                   <Link href={`/app/profile/${content.user?.id}`}>
                     View Profile
                   </Link>
                 </Button>
-                <Button 
+                <Button
                   variant={isSubscribed ? "outline" : "default"}
-                  className={!isSubscribed ? "bg-blue-600 text-white hover:bg-blue-700 w-full sm:w-auto shadow-sm" : "w-full sm:w-auto"}
+                  className={
+                    !isSubscribed
+                      ? "bg-secondary text-white hover:bg-secondary/95 w-full sm:w-auto rounded-full"
+                      : "w-full sm:w-auto"
+                  }
                   onClick={() => {
                     if (!isSubscribed) {
                       setPaymentModalOpen(true);
                     }
                   }}
                 >
-                  {isSubscribed ? "Subscribed" : `Subscribe for $${creatorProfile.subscription_price}`}
+                  {isSubscribed
+                    ? "Subscribed"
+                    : `Subscribe for $${creatorProfile.subscription_price}`}
                 </Button>
               </div>
             )}
@@ -140,7 +176,9 @@ export default function ContentDetails({ contentId, onBack, onContentClick, acce
           {/* Description */}
           {content.description && (
             <div className="bg-gray-50 p-5 rounded-xl border border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">Description</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                Description
+              </h3>
               <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
                 {content.description}
               </p>
@@ -149,29 +187,40 @@ export default function ContentDetails({ contentId, onBack, onContentClick, acce
 
           {/* Comments Section */}
           <div className="pt-6">
-            <h3 className="font-bold text-xl mb-6 text-gray-900">Comments ({content.comments?.length || 0})</h3>
-            
-            <ContentCommentForm contentId={content.id} accessToken={accessToken} />
+            <h3 className="font-bold text-xl mb-6 text-gray-900">
+              Comments ({content.comments?.length || 0})
+            </h3>
+
+            <ContentCommentForm
+              contentId={content.id}
+              accessToken={accessToken}
+            />
 
             {content.comments && content.comments.length > 0 ? (
               <div className="space-y-5">
-                {content.comments.map(comment => (
+                {content.comments.map((comment) => (
                   <div key={comment.id} className="flex gap-4">
                     <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden shrink-0 flex items-center justify-center border border-gray-200">
-                       {comment.user?.profile_picture ? (
-                         <img src={comment.user.profile_picture} alt={comment.user?.name} className="w-full h-full object-cover" />
-                       ) : (
-                         <User className="w-5 h-5 text-gray-400" />
-                       )}
+                      {comment.user?.profile_picture ? (
+                        <img
+                          src={comment.user.profile_picture}
+                          alt={comment.user?.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-5 h-5 text-gray-400" />
+                      )}
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-">
                       <div className="flex items-baseline gap-2 mb-1">
-                        <span className="font-semibold text-sm text-gray-900">{comment.user?.name || "User"}</span>
+                        <span className="font-semibold text-sm text-gray-900">
+                          {comment.user?.name || "User"}
+                        </span>
                         <span className="text-xs text-gray-500">
                           {new Date(comment.created_at).toLocaleDateString()}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-2xl rounded-tl-none inline-block border border-gray-100">
+                      <p className="text-sm text-gray-700 leading-relaxed bg-white p-3 rounded-2xl rounded-tl-none inline-block border border-gray-100">
                         {comment.comment}
                       </p>
                     </div>
@@ -181,8 +230,12 @@ export default function ContentDetails({ contentId, onBack, onContentClick, acce
             ) : (
               <div className="bg-gray-50 p-8 rounded-xl text-center border border-gray-100">
                 <MessageCircle className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm font-medium text-gray-900">No comments yet</p>
-                <p className="text-xs text-gray-500 mt-1">Be the first to share your thoughts!</p>
+                <p className="text-sm font-medium text-gray-900">
+                  No comments yet
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Be the first to share your thoughts!
+                </p>
               </div>
             )}
           </div>
@@ -193,9 +246,9 @@ export default function ContentDetails({ contentId, onBack, onContentClick, acce
           <h3 className="font-bold text-lg text-gray-900">Related Content</h3>
           {relatedVideos && relatedVideos.length > 0 ? (
             <div className="flex flex-col gap-4">
-              {relatedVideos.map(video => (
-                <div 
-                  key={video.id} 
+              {relatedVideos.map((video) => (
+                <div
+                  key={video.id}
                   className="flex gap-3 cursor-pointer group hover:bg-gray-50 p-2 -mx-2 rounded-xl transition-colors"
                   onClick={() => onContentClick(video.id)}
                 >
@@ -231,8 +284,8 @@ export default function ContentDetails({ contentId, onBack, onContentClick, acce
             </div>
           ) : (
             <div className="text-sm text-gray-500 border border-gray-100 bg-gray-50 rounded-xl p-8 text-center flex flex-col items-center">
-               <Play className="w-8 h-8 text-gray-300 mb-3" />
-               <p>No related content found.</p>
+              <Play className="w-8 h-8 text-gray-300 mb-3" />
+              <p>No related content found.</p>
             </div>
           )}
         </div>
